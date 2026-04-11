@@ -1,520 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-// ─────────────────────────────────────────────
-// EXERCISE GUIDE LIBRARY
-// ─────────────────────────────────────────────
-const EXERCISE_GUIDE = {
-  "その場足踏み": { points: ["足を腰幅に開いて立つっちゃ","膝を腰の高さまで上げるつもりで足踏みするっちゃ","腕も前後に振るっちゃ","だんだんペースを上げるっちゃ","呼吸を止めないようにするっちゃ"], tip: "体を温めるウォームアップだっちゃ！ゆっくり始めてOKだっちゃ" },
-  "腕まわし": { points: ["足を肩幅に開いて立つっちゃ","両腕を横に広げるっちゃ","肘を伸ばしたまま大きく前回しするっちゃ","肩甲骨が動くのを感じるっちゃ","前10回・後ろ10回やるっちゃ"], tip: "ゆっくり大きく回すほど効果があるっちゃ！" },
-  "股関節回し": { points: ["足を肩幅に開いて立つっちゃ","両手を腰に当てるっちゃ","腰で大きな円を描くように回すっちゃ","膝を少し曲げると安定するっちゃ","右回り10回・左回り10回やるっちゃ"], tip: "スクワットやランジの前に必須だっちゃ！" },
-  "膝まわし": { points: ["足を揃えてしゃがみ気味にするっちゃ","両手を膝に当てるっちゃ","膝で円を描くようにゆっくり回すっちゃ","関節をほぐす感覚でやるっちゃ","右回り10回・左回り10回やるっちゃ"], tip: "膝の怪我予防に大事なウォームアップだっちゃ！" },
-  "体側伸ばし": { points: ["足を肩幅に開いて立つっちゃ","右手を上に伸ばすっちゃ","左に体を傾けて右の体側を伸ばすっちゃ","反対側も同様にやるっちゃ","左右交互にゆっくり動かすっちゃ"], tip: "呼吸を止めないで、息を吐きながら伸ばすっちゃ！" },
-  "肩まわし": { points: ["足を肩幅に開いて立つっちゃ","両手の指先を肩に当てるっちゃ","肘で大きな円を描くように前まわしするっちゃ","肩甲骨を動かすことを意識するっちゃ","前回し・後ろ回しどちらもやるっちゃ"], tip: "ゆっくり大きく回すほど効果があるっちゃ！" },
-  "スクワット": { points: ["足を肩幅に開いてまっすぐ立つっちゃ","つま先を少し外側に向けるっちゃ","お尻を後ろに引きながらゆっくり下げるっちゃ","膝がつま先より前に出ないよう注意だっちゃ！","太ももが床と平行になったら上に戻るっちゃ"], tip: "背中を丸めないで、胸を張るっちゃ！" },
-  "ランジ（左右）": { points: ["足を腰幅に開いて立つっちゃ","片足を大きく前に踏み出すっちゃ","前の膝が90度になるまで体を下げるっちゃ","後ろの膝は床ギリギリまで下げるっちゃ","前足で地面を押して元に戻るっちゃ"], tip: "上体はまっすぐ！前に倒れないようにだっちゃ" },
-  "ヒップリフト": { points: ["仰向けに寝て膝を90度に曲げるっちゃ","足を腰幅に開いて床にしっかりつけるっちゃ","お尻をゆっくり天井に向かって上げるっちゃ","肩・腰・膝が一直線になったらキープだっちゃ","ゆっくり下ろして繰り返すっちゃ"], tip: "上げた時にお尻をギュッと締めるっちゃ！効果倍増だっちゃ" },
-  "膝つき腕立て": { points: ["膝をついて手を肩幅より少し広めに置くっちゃ","頭から膝まで一直線を意識するっちゃ","肘を外に開きすぎず、少し体に寄せるっちゃ","胸が床ギリギリまでゆっくり下げるっちゃ","息を吐きながら腕を伸ばして上がるっちゃ"], tip: "お腹に力を入れてお尻が上がらないようにだっちゃ！" },
-  "パイク腕立て": { points: ["腕立て伏せの姿勢からお尻を高く上げるっちゃ","体が逆V字になるようにするっちゃ","頭は腕の間を覗かせる感じにするっちゃ","肘をゆっくり曲げて頭を床に近づけるっちゃ","腕を伸ばして元の位置に戻るっちゃ"], tip: "肩の筋肉に効く種目だっちゃ！焦らずゆっくりやるっちゃ" },
-  "デッドバグ": { points: ["仰向けに寝て両腕を天井に伸ばすっちゃ","両膝を90度に曲げて持ち上げるっちゃ","腰を床にしっかり押し付けるのが大事だっちゃ！","右手と左足を同時に床に近づけながら伸ばすっちゃ","元に戻して逆側を繰り返すっちゃ"], tip: "腰が床から浮かないようにするのがポイントだっちゃ！" },
-  "クランチ": { points: ["仰向けに寝て膝を90度に曲げるっちゃ","手を頭の後ろか胸の前で組むっちゃ","顎を引いてへそを見るように上体を起こすっちゃ","肩甲骨が浮く程度でOKだっちゃ","ゆっくり下ろして繰り返すっちゃ"], tip: "首に力が入りやすいから気をつけてだっちゃ！" },
-  "バードドッグ": { points: ["四つん這いになって手は肩の下、膝は腰の下に置くっちゃ","背中をまっすぐに保つっちゃ（猫背NG！）","右手と左足を同時にまっすぐ伸ばすっちゃ","3秒キープして元に戻すっちゃ","左手と右足も同様に繰り返すっちゃ"], tip: "お腹に力を入れると体が安定するっちゃ！" },
-  "ワイドスクワット": { points: ["足を肩幅の1.5倍に広げて立つっちゃ","つま先を45度外側に向けるっちゃ","膝をつま先の方向に曲げながら腰を落とすっちゃ","内ももを使う感覚を意識するっちゃ","ゆっくり立ち上がるっちゃ"], tip: "通常スクワットより内側の筋肉に効くっちゃ！" },
-  "カーフレイズ": { points: ["足を腰幅に開いて立つっちゃ（壁に手をそえてもOK）","かかとをゆっくり持ち上げるっちゃ","つま先立ちの頂点で1秒止めるっちゃ","ゆっくりかかとを下ろすっちゃ","下ろしきる前にまた上げると効果的だっちゃ"], tip: "ふくらはぎに効くっちゃ！立ち仕事の疲れにもいいっちゃ" },
-  "腕立て伏せ": { points: ["手を肩幅より少し広めに置くっちゃ","頭からかかとまで一直線にするっちゃ","お腹に力を入れてお尻が落ちないようにだっちゃ","胸が床ギリギリまでゆっくり下げるっちゃ","腕を伸ばして戻るっちゃ"], tip: "きつければ膝をついてOKだっちゃ！" },
-  "トライセプスディップス": { points: ["椅子や床に手をついて体を前に出すっちゃ","脚は膝を曲げて前に伸ばすっちゃ","肘を後ろに曲げながら体を下げるっちゃ","腕の後ろ側（二の腕）を使う感覚だっちゃ","肘を伸ばして元に戻すっちゃ"], tip: "肘が外に開かないよう、体に近い位置でやるっちゃ！" },
-  "サイドレッグレイズ": { points: ["横向きに寝て体をまっすぐにするっちゃ","下の腕を伸ばして頭を乗せるっちゃ","上の足をゆっくり上に持ち上げるっちゃ（45度くらい）","腰が前後にぶれないよう注意だっちゃ","ゆっくり下ろして繰り返すっちゃ（左右やるっちゃ）"], tip: "お尻の横の筋肉に効くっちゃ！骨盤安定に大事だっちゃ" },
-  "リバースクランチ": { points: ["仰向けで両膝を90度に曲げて浮かせるっちゃ","手のひらを床につけて体を安定させるっちゃ","息を吐きながらお尻を床から浮かせるっちゃ","膝を胸に近づけるように引き上げるっちゃ","ゆっくり元の位置に戻すっちゃ"], tip: "お腹の下部に効くっちゃ！反動を使わないでっちゃ" },
-  "マウンテンクライマー": { points: ["腕立て伏せの姿勢（プランク姿勢）からスタートだっちゃ","体はまっすぐ、お腹に力を入れるっちゃ","右膝を胸に向かって素早く引き上げるっちゃ","右足を戻しながら左膝を引き上げるっちゃ","交互に素早く繰り返すっちゃ（走るイメージ！）"], tip: "お腹・全身に効くきつい種目だっちゃ！無理せずペース調整するっちゃ" },
-  "スクワットジャンプ": { points: ["足を肩幅に開いてスクワットの姿勢になるっちゃ","太ももが床と平行になるまで下げるっちゃ","腕を振り上げながら思い切りジャンプするっちゃ","着地はつま先からかかとの順でやわらかくするっちゃ","着地してすぐ次のスクワットに入るっちゃ"], tip: "膝に負担がかかるから着地は丁寧にだっちゃ！きつければ通常スクワットでOKっちゃ" },
-  "パルススクワット": { points: ["スクワットの一番低い位置でキープするっちゃ","そこから5cmほど上下に小刻みに動かすっちゃ","太ももに効いてるのを感じるっちゃ","呼吸は止めないっちゃ","20回パルスしたら立ち上がるっちゃ"], tip: "地味にきついっちゃ！太ももに火がつくっちゃ🔥" },
-  "ダイヤモンド腕立て": { points: ["手を胸の前でひし形（ダイヤモンド型）に置くっちゃ","人差し指と親指で三角を作る感じだっちゃ","頭からかかとまで一直線にするっちゃ","ゆっくり胸を手に近づけるっちゃ","腕を伸ばして戻るっちゃ。きつければ膝つきOKっちゃ"], tip: "二の腕（三頭筋）に集中して効くっちゃ！" },
-  // ── COOL DOWN ──
-  "首の横伸ばし": { points: ["背筋を伸ばして座るかまっすぐ立つっちゃ","右手を頭の左側に当てるっちゃ","ゆっくり右に頭を倒して左の首筋を伸ばすっちゃ","20〜30秒キープするっちゃ","反対側も同じようにやるっちゃ"], tip: "肩に力が入らないように、肩をストンと落としてやるっちゃ！" },
-  "肩甲骨ストレッチ": { points: ["右腕を体の前に横に伸ばすっちゃ","左腕で右腕の肘を体に引き寄せるっちゃ","右肩の後ろ側が伸びる感覚を確認するっちゃ","20〜30秒キープするっちゃ","左腕も同様にやるっちゃ"], tip: "肩こりに効く定番ストレッチだっちゃ！毎日やってほしいっちゃ" },
-  "胸を開くストレッチ": { points: ["両手を背中で組むっちゃ","胸を前に突き出すように肩甲骨を寄せるっちゃ","顔は少し上を向けるっちゃ","胸と肩の前側が伸びるのを感じるっちゃ","20〜30秒キープするっちゃ"], tip: "スマホ・デスクワークで縮んだ胸筋を解放するっちゃ！" },
-  "前屈ストレッチ": { points: ["足を肩幅に開いてまっすぐ立つっちゃ","膝を軽く曲げてもOKだっちゃ","ゆっくり上体を前に倒すっちゃ","手を床に向かって自然に下ろすっちゃ","20〜30秒キープ、反動をつけないっちゃ"], tip: "腰と太もも裏が伸びるっちゃ！無理に深く曲げなくていいっちゃ" },
-  "股関節ストレッチ": { points: ["床に座って両足の裏をくっつけるっちゃ（バタフライポーズ）","かかとを股の近くに引き寄せるっちゃ","両膝を床に向かってゆっくり押し下げるっちゃ","上体を少し前に傾けると更に伸びるっちゃ","30秒キープするっちゃ"], tip: "股関節の柔軟性アップに最強のポーズだっちゃ！" },
-  "太もも前ストレッチ": { points: ["片足で立って（壁に手をついてもいいっちゃ）","片方の足首を手でつかんで後ろに引くっちゃ","膝を閉じて太ももの前側が伸びるのを感じるっちゃ","上体が前に倒れないよう注意するっちゃ","20〜30秒キープして反対も同じようにやるっちゃ"], tip: "スクワットやランジの後に特に効果的だっちゃ！" },
-  "ふくらはぎストレッチ": { points: ["壁に手をつきランジの姿勢になるっちゃ","後ろ足のかかとを床にしっかりつけるっちゃ","後ろ足のふくらはぎが伸びるのを感じるっちゃ","膝は伸ばしたままキープするっちゃ","20〜30秒したら反対側もやるっちゃ"], tip: "むくみ改善にもなるっちゃ！" },
-  "寝ながら腰ストレッチ": { points: ["仰向けに寝て両膝を曲げるっちゃ","両膝を揃えたまま左右どちらかにゆっくり倒すっちゃ","肩は床から離さないようにするっちゃ","腰がじんわり伸びるのを感じるっちゃ","20秒キープして逆側もやるっちゃ"], tip: "腰痛予防に最高だっちゃ！寝る前にもおすすめっちゃ" },
-  "腹式呼吸": { points: ["楽な姿勢で座るか仰向けに寝るっちゃ","お腹に手を当てるっちゃ","鼻からゆっくり息を吸ってお腹を膨らませるっちゃ（4秒）","口からゆっくり息を吐いてお腹をへこませるっちゃ（6秒）","これを繰り返すっちゃ"], tip: "体幹のインナーマッスルにも効くっちゃ！副交感神経も整うっちゃ" },
-  // EASY
-  "壁腕立て": { points: ["壁から1歩離れて壁に手をつくっちゃ","手は肩幅に広げるっちゃ","体をまっすぐにしたまま壁に近づくっちゃ","胸が壁に近づいたら腕を伸ばして戻るっちゃ","ゆっくり10回やるっちゃ"], tip: "疲れてる日は壁腕立てでも上半身に効くっちゃ！" },
-  "椅子スクワット": { points: ["椅子の前に立つっちゃ","ゆっくりお尻を椅子に下ろすように腰を曲げるっちゃ","お尻が椅子につく直前で止めて立ち上がるっちゃ","腕を前に伸ばすとバランスが取りやすいっちゃ","10回繰り返すっちゃ"], tip: "膝が痛い人や疲れてる日にぴったりだっちゃ！" },
-  "肩甲骨寄せ": { points: ["背筋を伸ばして座るかまっすぐ立つっちゃ","両腕を横に少し広げるっちゃ","肘を曲げて両方の肩甲骨をギュッと寄せるっちゃ","3秒キープするっちゃ","ゆっくり戻して繰り返すっちゃ"], tip: "デスクワーク後の肩こりに超効くっちゃ！" },
-};
+import { EXERCISE_GUIDE } from "./data/exerciseGuide.js";
+import { WEEK_ROTATIONS, EASY_DAY } from "./data/weekRotations.js";
+import { getRamMsg } from "./data/ramMessages.js";
 
-// ─────────────────────────────────────────────
-// WARM-UP & COOL-DOWN templates
-// ─────────────────────────────────────────────
-const WARMUP_LOWER = [
-  { name: "その場足踏み", reps: "30秒", duration: 35, rest: 5 },
-  { name: "股関節回し", reps: "左右10回", duration: 30, rest: 5 },
-  { name: "膝まわし", reps: "左右10回", duration: 30, rest: 5 },
-];
-const WARMUP_UPPER = [
-  { name: "その場足踏み", reps: "30秒", duration: 35, rest: 5 },
-  { name: "腕まわし", reps: "前後10回", duration: 30, rest: 5 },
-  { name: "肩まわし", reps: "前後10回", duration: 30, rest: 5 },
-];
-const WARMUP_CORE = [
-  { name: "その場足踏み", reps: "30秒", duration: 35, rest: 5 },
-  { name: "体側伸ばし", reps: "左右10回", duration: 30, rest: 5 },
-  { name: "股関節回し", reps: "左右10回", duration: 30, rest: 5 },
-];
-const COOLDOWN_LOWER = [
-  { name: "前屈ストレッチ", reps: "20秒", duration: 25, rest: 5 },
-  { name: "太もも前ストレッチ", reps: "左右20秒", duration: 45, rest: 5 },
-  { name: "ふくらはぎストレッチ", reps: "左右20秒", duration: 45, rest: 5 },
-  { name: "股関節ストレッチ", reps: "30秒", duration: 35, rest: 5 },
-];
-const COOLDOWN_UPPER = [
-  { name: "肩甲骨ストレッチ", reps: "左右20秒", duration: 45, rest: 5 },
-  { name: "胸を開くストレッチ", reps: "20秒", duration: 25, rest: 5 },
-  { name: "首の横伸ばし", reps: "左右20秒", duration: 45, rest: 5 },
-];
-const COOLDOWN_CORE = [
-  { name: "寝ながら腰ストレッチ", reps: "左右20秒", duration: 45, rest: 5 },
-  { name: "前屈ストレッチ", reps: "20秒", duration: 25, rest: 5 },
-  { name: "腹式呼吸", reps: "5回", duration: 40, rest: 5 },
-];
+import { getWeekIndex, buildSchedule } from "./utils/schedule.js";
+import { playBeep, unlockAudio } from "./utils/audio.js";
+import { speak, stepSpeech } from "./utils/speech.js";
+import { loadHistory, saveHistory } from "./utils/storage.js";
+import { phaseColor, phaseBadgeLabel } from "./utils/phase.js";
 
-// ─────────────────────────────────────────────
-// WEEKLY ROTATION  — 4 weeks, progressive
-// Week A: 基礎 (2sets × 標準回数)
-// Week B: 種目変化 (2sets × 少し増)
-// Week C: 強度UP (2sets × さらに増 + 難種目)
-// Week D: 最高強度 (3sets or ハード種目)
-// ─────────────────────────────────────────────
-const WEEK_ROTATIONS = [
-  { // ── Week A 基礎 ──
-    label: "Week A", sublabel: "基礎固め", sets: 2,
-    day1: { label: "Day 1", theme: "下半身", emoji: "🦵", color: "#FF6B6B", warmup: WARMUP_LOWER, cooldown: COOLDOWN_LOWER,
-      exercises: [
-        { name: "スクワット", reps: "15回", duration: 40, rest: 20 },
-        { name: "ランジ（左右）", reps: "10回", duration: 50, rest: 20 },
-        { name: "ヒップリフト", reps: "15回", duration: 40, rest: 20 },
-      ]},
-    day2: { label: "Day 2", theme: "上半身", emoji: "💪", color: "#4ECDC4", warmup: WARMUP_UPPER, cooldown: COOLDOWN_UPPER,
-      exercises: [
-        { name: "膝つき腕立て", reps: "10回", duration: 40, rest: 20 },
-        { name: "パイク腕立て", reps: "8回", duration: 40, rest: 20 },
-        { name: "肩まわし", reps: "20回", duration: 30, rest: 20 },
-      ]},
-    day3: { label: "Day 3", theme: "体幹", emoji: "🔥", color: "#FFD93D", warmup: WARMUP_CORE, cooldown: COOLDOWN_CORE,
-      exercises: [
-        { name: "デッドバグ", reps: "10回（左右）", duration: 50, rest: 20 },
-        { name: "クランチ", reps: "15回", duration: 40, rest: 20 },
-        { name: "バードドッグ", reps: "10回（左右）", duration: 50, rest: 20 },
-      ]},
-  },
-  { // ── Week B 慣れてきた ──
-    label: "Week B", sublabel: "少し強化", sets: 2,
-    day1: { label: "Day 1", theme: "下半身B", emoji: "🦵", color: "#FF6B6B", warmup: WARMUP_LOWER, cooldown: COOLDOWN_LOWER,
-      exercises: [
-        { name: "ワイドスクワット", reps: "15回", duration: 45, rest: 20 },
-        { name: "ランジ（左右）", reps: "12回", duration: 55, rest: 20 },
-        { name: "ヒップリフト", reps: "20回", duration: 50, rest: 20 },
-        { name: "カーフレイズ", reps: "20回", duration: 35, rest: 20 },
-      ]},
-    day2: { label: "Day 2", theme: "上半身B", emoji: "💪", color: "#4ECDC4", warmup: WARMUP_UPPER, cooldown: COOLDOWN_UPPER,
-      exercises: [
-        { name: "腕立て伏せ", reps: "8回", duration: 40, rest: 20 },
-        { name: "パイク腕立て", reps: "10回", duration: 45, rest: 20 },
-        { name: "トライセプスディップス", reps: "10回", duration: 40, rest: 20 },
-      ]},
-    day3: { label: "Day 3", theme: "体幹B", emoji: "🔥", color: "#FFD93D", warmup: WARMUP_CORE, cooldown: COOLDOWN_CORE,
-      exercises: [
-        { name: "クランチ", reps: "15回", duration: 40, rest: 20 },
-        { name: "リバースクランチ", reps: "12回", duration: 45, rest: 20 },
-        { name: "バードドッグ", reps: "12回（左右）", duration: 55, rest: 20 },
-      ]},
-  },
-  { // ── Week C 本格的に ──
-    label: "Week C", sublabel: "本格強化", sets: 2,
-    day1: { label: "Day 1", theme: "下半身C", emoji: "🦵", color: "#FF6B6B", warmup: WARMUP_LOWER, cooldown: COOLDOWN_LOWER,
-      exercises: [
-        { name: "スクワット", reps: "20回", duration: 50, rest: 20 },
-        { name: "パルススクワット", reps: "20回", duration: 45, rest: 20 },
-        { name: "サイドレッグレイズ", reps: "15回（左右）", duration: 55, rest: 20 },
-        { name: "ヒップリフト", reps: "20回", duration: 50, rest: 20 },
-      ]},
-    day2: { label: "Day 2", theme: "上半身C", emoji: "💪", color: "#4ECDC4", warmup: WARMUP_UPPER, cooldown: COOLDOWN_UPPER,
-      exercises: [
-        { name: "腕立て伏せ", reps: "10回", duration: 45, rest: 20 },
-        { name: "ダイヤモンド腕立て", reps: "8回", duration: 40, rest: 20 },
-        { name: "トライセプスディップス", reps: "12回", duration: 45, rest: 20 },
-      ]},
-    day3: { label: "Day 3", theme: "体幹C", emoji: "🔥", color: "#FFD93D", warmup: WARMUP_CORE, cooldown: COOLDOWN_CORE,
-      exercises: [
-        { name: "デッドバグ", reps: "12回（左右）", duration: 55, rest: 20 },
-        { name: "マウンテンクライマー", reps: "25秒", duration: 30, rest: 20 },
-        { name: "リバースクランチ", reps: "15回", duration: 45, rest: 20 },
-      ]},
-  },
-  { // ── Week D 最高強度 ──
-    label: "Week D", sublabel: "最高強度🔥", sets: 3,
-    day1: { label: "Day 1", theme: "下半身D", emoji: "🦵", color: "#FF6B6B", warmup: WARMUP_LOWER, cooldown: COOLDOWN_LOWER,
-      exercises: [
-        { name: "スクワットジャンプ", reps: "10回", duration: 40, rest: 25 },
-        { name: "ランジ（左右）", reps: "15回", duration: 60, rest: 25 },
-        { name: "ヒップリフト", reps: "20回", duration: 50, rest: 25 },
-      ]},
-    day2: { label: "Day 2", theme: "上半身D", emoji: "💪", color: "#4ECDC4", warmup: WARMUP_UPPER, cooldown: COOLDOWN_UPPER,
-      exercises: [
-        { name: "腕立て伏せ", reps: "12回", duration: 50, rest: 25 },
-        { name: "ダイヤモンド腕立て", reps: "10回", duration: 45, rest: 25 },
-        { name: "パイク腕立て", reps: "12回", duration: 50, rest: 25 },
-      ]},
-    day3: { label: "Day 3", theme: "体幹D", emoji: "🔥", color: "#FFD93D", warmup: WARMUP_CORE, cooldown: COOLDOWN_CORE,
-      exercises: [
-        { name: "マウンテンクライマー", reps: "30秒", duration: 35, rest: 25 },
-        { name: "デッドバグ", reps: "15回（左右）", duration: 60, rest: 25 },
-        { name: "リバースクランチ", reps: "15回", duration: 50, rest: 25 },
-      ]},
-  },
-];
+import VoiceSelector from "./components/VoiceSelector.jsx";
+import GuideCard from "./components/GuideCard.jsx";
+import HealthGuide from "./components/HealthGuide.jsx";
+import HistoryPanel from "./components/HistoryPanel.jsx";
 
-const EASY_DAY = {
-  label: "5分メニュー", theme: "疲れた日", emoji: "😴", color: "#82E0AA", sets: 1,
-  warmup: [], cooldown: [{ name: "腹式呼吸", reps: "5回", duration: 40, rest: 0 }],
-  exercises: [
-    { name: "その場足踏み", reps: "30秒", duration: 35, rest: 10 },
-    { name: "スクワット", reps: "10回", duration: 40, rest: 10 },
-    { name: "壁腕立て", reps: "10回", duration: 40, rest: 10 },
-    { name: "肩甲骨寄せ", reps: "15回", duration: 35, rest: 10 },
-  ],
-};
-
-// 今週をWeek A(0)の基準にする — 2025年1月6日(月)を起点に4週サイクル
-function getWeekIndex() {
-  const start = new Date(2026, 3, 7); // 2026年4月7日(月)を Week A 起点
-  const diffDays = Math.floor((new Date() - start) / (24 * 3600 * 1000));
-  return ((Math.floor(diffDays / 7) % 4) + 4) % 4;
-}
-
-function buildSchedule(dayKey) {
-  const wi = getWeekIndex();
-  const weekData = WEEK_ROTATIONS[wi];
-  const day = dayKey === "easy" ? EASY_DAY : { ...weekData[dayKey], sets: weekData.sets };
-  const { exercises, warmup, cooldown, sets } = day;
-  const steps = [];
-
-  // WARM-UP
-  if (warmup && warmup.length > 0) {
-    steps.push({ type: "countdown", label: "🔥 ウォームアップ", duration: 3, color: "#F0A500" });
-    warmup.forEach(ex => {
-      steps.push({ type: "warmup", name: ex.name, reps: ex.reps, duration: ex.duration, rest: ex.rest });
-      if (ex.rest > 0) steps.push({ type: "rest", duration: ex.rest, label: "次の準備", nextName: null, mini: true });
-    });
-  }
-
-  // MAIN WORK
-  steps.push({ type: "countdown", label: "💪 メインワークアウト", duration: 3, color: day.color || "#4ECDC4" });
-  for (let set = 1; set <= sets; set++) {
-    exercises.forEach((ex, i) => {
-      steps.push({ type: "work", set, sets, name: ex.name, reps: ex.reps, duration: ex.duration });
-      const isLastInSet = i === exercises.length - 1;
-      const isLastSet = set === sets;
-      if (!isLastSet || !isLastInSet) {
-        const nextEx = isLastInSet ? exercises[0] : exercises[i + 1];
-        steps.push({
-          type: "rest",
-          duration: isLastInSet ? 30 : ex.rest,
-          label: isLastInSet ? `セット${set}完了！あと${sets - set}セットだっちゃ` : "休憩",
-          nextName: nextEx?.name,
-        });
-      }
-    });
-  }
-
-  // COOL-DOWN
-  if (cooldown && cooldown.length > 0) {
-    steps.push({ type: "countdown", label: "🧊 クールダウン", duration: 3, color: "#5DADE2" });
-    cooldown.forEach((ex, i) => {
-      steps.push({ type: "cooldown", name: ex.name, reps: ex.reps, duration: ex.duration });
-      if (i < cooldown.length - 1) steps.push({ type: "rest", duration: ex.rest || 5, label: "次のストレッチ", nextName: cooldown[i+1]?.name, mini: true });
-    });
-  }
-
-  steps.push({ type: "done", duration: 0 });
-  return steps;
-}
-
-const RAM_MSG = {
-  warmup: ["体を温めるっちゃ！", "ゆっくり動かすっちゃ！", "関節をほぐすっちゃ！"],
-  work: ["いけっちゃ！", "ファイトだっちゃ！", "その調子だっちゃ！", "集中だっちゃ！", "もう少しだっちゃ！"],
-  cooldown: ["お疲れさま！伸ばすっちゃ〜", "ゆっくり深呼吸しながらだっちゃ", "回復タイムだっちゃ！"],
-  rest: ["よく頑張っただっちゃ！", "息整えてだっちゃ〜", "次の準備するっちゃ！"],
-  section: ["次のフェーズだっちゃ！", "切り替えるっちゃ！"],
-  intro: ["フォーム確認するっちゃ！", "これ大事だっちゃ！"],
-  done: ["やったっちゃ！最高だっちゃ！"],
-};
-function getRamMsg(type) {
-  const arr = RAM_MSG[type] || RAM_MSG.work;
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-function formatDate(iso) {
-  const d = new Date(iso);
-  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
-}
-const STORAGE_KEY = "ram_workout_v4";
-function loadHistory() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch (e) { return []; } }
-function saveHistory(h) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(h.slice(-60))); } catch (e) { /* ignore */ } }
-
-// ── Phase colors ──
-function phaseColor(step, dayColor) {
-  if (!step) return dayColor;
-  if (step.type === "warmup") return "#F0A500";
-  if (step.type === "cooldown") return "#5DADE2";
-  if (step.type === "countdown") return step.color;
-  if (step.type === "rest" && step.mini) return "rgba(255,255,255,0.5)";
-  if (step.type === "rest") return "#a29bfe";
-  return dayColor;
-}
-function phaseBadgeLabel(step) {
-  if (!step) return "";
-  if (step.type === "countdown") return step.label;
-  if (step.type === "warmup") return "🔥 ウォームアップ";
-  if (step.type === "cooldown") return "🧊 クールダウン";
-  if (step.type === "work") return `セット${step.set} / ${step.sets}`;
-  if (step.type === "rest") return step.mini ? "→ 次へ" : "💨 休憩";
-  if (step.type === "done") return "🎉 完了！";
-  return "";
-}
-
-// ─── Sound ───
-let _audioCtx = null;
-function getAudioCtx() {
-  if (!_audioCtx) {
-    _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (_audioCtx.state === "suspended") {
-    _audioCtx.resume();
-  }
-  return _audioCtx;
-}
-function playBeep(type = "tick") {
-  try {
-    const ctx = getAudioCtx();
-    const now = ctx.currentTime;
-    const beep = (freq, startTime, duration, volume = 0.25) => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.connect(g); g.connect(ctx.destination);
-      o.frequency.value = freq;
-      g.gain.setValueAtTime(volume, startTime);
-      g.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-      o.start(startTime); o.stop(startTime + duration);
-    };
-    if (type === "start") {
-      beep(880, now, 0.1, 0.3);
-      beep(1100, now + 0.1, 0.2, 0.3);
-    } else if (type === "done") {
-      [523, 659, 784, 1047].forEach((f, i) => beep(f, now + i * 0.12, 0.3));
-    } else if (type === "last3") {
-      beep(440, now, 0.1, 0.15);
-    }
-  } catch (e) { /* audio not supported */ }
-}
-// iOS用: 最初のタップでAudioContextをunlockする
-function unlockAudio() {
-  try { getAudioCtx(); } catch (e) { /* ignore */ }
-}
-
-// ─── Speech ───
-let _selectedVoice = null;
-
-function speak(text, voice) {
-  try {
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "ja-JP";
-    u.rate = 1.05;
-    u.pitch = 1.1;
-    u.volume = 1.0;
-    const v = voice || _selectedVoice;
-    if (v) u.voice = v;
-    window.speechSynthesis.speak(u);
-  } catch (e) { /* ignore */ }
-}
-
-function stepSpeech(ns) {
-  if (!ns) return;
-  if (ns.type === "work" || ns.type === "warmup") {
-    const reps = ns.reps ? `${ns.reps}、` : "";
-    speak(`${ns.name}、${reps}スタート！`);
-  } else if (ns.type === "cooldown") {
-    speak(`${ns.name}、スタート`);
-  } else if (ns.type === "rest") {
-    if (ns.nextName) speak(`よく頑張っただっちゃ！次は${ns.nextName}`);
-    else if (ns.label && ns.label.includes("セット")) speak("よく頑張っただっちゃ！少し休憩");
-    else speak("よく頑張っただっちゃ！");
-  } else if (ns.type === "done") {
-    speak("お疲れさまだっちゃ！全部完了！最高だっちゃ！");
-  } else if (ns.type === "countdown") {
-    if (ns.label && ns.label.includes("ウォーム")) speak("ウォームアップ、スタート！");
-    else if (ns.label && ns.label.includes("クール")) speak("クールダウン、スタート！");
-    else speak("メインワークアウト、スタート！");
-  }
-}
-
-// ─── Voice Selector Modal ───
-function VoiceSelector({ onClose }) {
-  const [voices, setVoices] = useState([]);
-  const [selected, setSelected] = useState(null);
-
-  useEffect(() => {
-    const load = () => {
-      const all = window.speechSynthesis.getVoices();
-      const ja = all.filter(v => v.lang.startsWith("ja"));
-      setVoices(ja.length > 0 ? ja : all.slice(0, 12));
-      setSelected(_selectedVoice?.name || null);
-    };
-    load();
-    window.speechSynthesis.onvoiceschanged = load;
-    return () => { window.speechSynthesis.onvoiceschanged = null; };
-  }, []);
-
-  const handleSelect = (v) => {
-    _selectedVoice = v;
-    setSelected(v.name);
-    speak(`こんにちは！私が読み上げを担当するっちゃ！`, v);
-  };
-
-  return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)", display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={onClose}>
-      <div style={{ background: "linear-gradient(160deg, #1a1740 0%, #2d2b55 100%)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "24px 24px 0 0", padding: "24px 20px 40px", width: "100%", maxWidth: 440, maxHeight: "70vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <div style={{ fontWeight: 900, fontSize: 16 }}>🎙️ 声を選ぶっちゃ！</div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 10, padding: "6px 14px", color: "#fff", fontFamily: "inherit", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>とじる</button>
-        </div>
-        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 12 }}>選ぶとテスト再生するっちゃ！</div>
-        {voices.length === 0 && (
-          <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, padding: "20px 0", textAlign: "center" }}>
-            音声が見つからないっちゃ…<br />ブラウザの設定を確認してだっちゃ
-          </div>
-        )}
-        {voices.map((v, i) => (
-          <div key={i} onClick={() => handleSelect(v)} style={{ background: selected === v.name ? "rgba(255,211,61,0.15)" : "rgba(255,255,255,0.05)", border: `1px solid ${selected === v.name ? "#FFD93D" : "rgba(255,255,255,0.08)"}`, borderRadius: 12, padding: "11px 14px", marginBottom: 7, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 13, color: selected === v.name ? "#FFD93D" : "#fff" }}>{v.name}</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{v.lang} {v.localService ? "・ローカル" : "・オンライン"}</div>
-            </div>
-            {selected === v.name && <div style={{ fontSize: 16 }}>✓</div>}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── Exercise Guide Popup ───
-function GuidePopup({ name, color, onClose }) {
-  const g = EXERCISE_GUIDE[name];
-  if (!g) return null;
-  return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={onClose}>
-      <div style={{ background: "linear-gradient(160deg, #1a1740 0%, #2d2b55 100%)", border: `1px solid ${color}44`, borderRadius: 24, padding: "22px 20px", maxWidth: 380, width: "100%", maxHeight: "80vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <div style={{ fontWeight: 900, fontSize: 16, color }}>{name}</div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 8, padding: "5px 12px", color: "#fff", fontFamily: "inherit", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>とじる</button>
-        </div>
-        {g.points.map((p, i) => (
-          <div key={i} style={{ display: "flex", gap: 10, marginBottom: 8, alignItems: "flex-start" }}>
-            <div style={{ minWidth: 22, height: 22, borderRadius: "50%", background: color, color: "#000", fontWeight: 900, fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>{i+1}</div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", lineHeight: 1.6 }}>{p}</div>
-          </div>
-        ))}
-        <div style={{ background: `${color}20`, borderRadius: 10, padding: "9px 12px", fontSize: 12, color: "rgba(255,255,255,0.7)", marginTop: 10, lineHeight: 1.5 }}>💡 {g.tip}</div>
-      </div>
-    </div>
-  );
-}
-
-// ── Guide Card ──
-function GuideCard({ name, color }) {
-  const g = EXERCISE_GUIDE[name];
-  if (!g) return null;
-  return (
-    <div style={{ background: `${color}18`, border: `1px solid ${color}44`, borderRadius: 14, padding: "12px 14px", marginBottom: 10, textAlign: "left" }}>
-      <div style={{ fontWeight: 900, fontSize: 13, marginBottom: 7, color }}>📖 やり方だっちゃ！</div>
-      {g.points.map((p, i) => (
-        <div key={i} style={{ display: "flex", gap: 8, marginBottom: 5, alignItems: "flex-start" }}>
-          <div style={{ minWidth: 20, height: 20, borderRadius: "50%", background: color, color: "#000", fontWeight: 900, fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>{i+1}</div>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", lineHeight: 1.5 }}>{p}</div>
-        </div>
-      ))}
-      <div style={{ background: `${color}20`, borderRadius: 8, padding: "7px 10px", fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 7, lineHeight: 1.5 }}>💡 {g.tip}</div>
-    </div>
-  );
-}
-
-// ── Health Guide ──
-function HealthGuide({ dayKey, onClose }) {
-  const wi = getWeekIndex();
-  const weekData = WEEK_ROTATIONS[wi];
-  const day = dayKey === "easy" ? EASY_DAY : weekData[dayKey];
-  const color = day.color || "#82E0AA";
-  const steps = ["iPhoneの「ヘルスケア」アプリを開くっちゃ","右下「ブラウズ」→「アクティビティ」→「ワークアウト」をタップだっちゃ","右上の「＋」ボタンを押すっちゃ！","「機能的筋力トレーニング」を選ぶっちゃ","時間を入力して日時を今日に合わせるっちゃ","「追加」を押したら完了だっちゃ！"];
-  return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 100, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ background: "linear-gradient(160deg, #1a1740 0%, #2d2b55 100%)", border: `1px solid ${color}44`, borderRadius: 28, padding: "28px 24px", maxWidth: 380, width: "100%", boxShadow: `0 0 60px ${color}22` }}>
-        <div style={{ textAlign: "center", marginBottom: 18 }}>
-          <div style={{ fontSize: 34, marginBottom: 6 }}>📱</div>
-          <div style={{ fontWeight: 900, fontSize: 17 }}>ヘルスケアに記録するっちゃ！</div>
-        </div>
-        {steps.map((s, i) => (
-          <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "9px 12px", marginBottom: 7 }}>
-            <div style={{ minWidth: 22, height: 22, borderRadius: "50%", background: color, color: "#000", fontWeight: 900, fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i+1}</div>
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", lineHeight: 1.5 }}>{s}</div>
-          </div>
-        ))}
-        <div style={{ background: `${color}18`, border: `1px solid ${color}44`, borderRadius: 10, padding: "9px 12px", fontSize: 11, color: "rgba(255,255,255,0.6)", margin: "10px 0 14px", lineHeight: 1.6 }}>💡 Apple Watchがあれば「ワークアウト」アプリで直接記録できるっちゃ！</div>
-        <button onClick={onClose} style={{ width: "100%", background: `linear-gradient(135deg, ${color}, ${color}99)`, border: "none", borderRadius: 12, padding: "13px", color: "#000", fontWeight: 900, fontSize: 14, fontFamily: "inherit", cursor: "pointer" }}>わかっただっちゃ！✓</button>
-      </div>
-    </div>
-  );
-}
-
-// ── History Panel ──
-function HistoryPanel({ history, onClose, onDelete }) {
-  const wi = getWeekIndex();
-  const weekData = WEEK_ROTATIONS[wi];
-  return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 100, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div style={{ background: "linear-gradient(160deg, #1a1740 0%, #2d2b55 100%)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "28px 28px 0 0", padding: "24px 20px 40px", width: "100%", maxWidth: 440, maxHeight: "75vh", overflowY: "auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-          <div style={{ fontWeight: 900, fontSize: 16 }}>📋 きろく一覧だっちゃ！</div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 10, padding: "6px 14px", color: "#fff", fontFamily: "inherit", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>とじる</button>
-        </div>
-        {history.length === 0 ? (
-          <div style={{ textAlign: "center", color: "rgba(255,255,255,0.4)", padding: "40px 0", fontSize: 13 }}>まだ記録がないっちゃ…<br />最初の1回を頑張るっちゃ！💪</div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-            {[...history].reverse().map((r, i) => {
-              const d = r.dayKey === "easy" ? EASY_DAY : (weekData[r.dayKey] || EASY_DAY);
-              return (
-                <div key={i} style={{ background: `${d.color}14`, border: `1px solid ${d.color}33`, borderRadius: 14, padding: "11px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: 13 }}>{d.emoji} {d.label} {d.theme}</div>
-                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 3 }}>{formatDate(r.date)}　⏱ {r.mins}分　{r.week || ""}</div>
-                  </div>
-                  <button onClick={() => onDelete(history.length - 1 - i)} style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, padding: "4px 10px", color: "rgba(255,255,255,0.4)", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>削除</button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────
-// MAIN APP
-// ─────────────────────────────────────────────
 export default function WorkoutTimer() {
   const [selectedDay, setSelectedDay] = useState(null);
   const [schedule, setSchedule] = useState([]);
@@ -562,24 +62,29 @@ export default function WorkoutTimer() {
     startTimeRef.current = null;
   }, []);
 
+  const advanceToStep = useCallback((nextIdx, beepType) => {
+    if (nextIdx < schedule.length) {
+      const ns = schedule[nextIdx];
+      setStepIdx(nextIdx);
+      setTimeLeft(ns.duration || 0);
+      prevTimeRef.current = ns.duration || 0;
+      setRamMsg(getRamMsg(ns.type));
+      if (["warmup","cooldown","work"].includes(ns.type)) setShowGuide(true);
+      else if (ns.type === "rest" || ns.type === "countdown") setShowGuide(false);
+      if (ns.type === "done") { setRunning(false); handleFinish(selectedDay); playBeep("done"); }
+      playBeep(beepType);
+      stepSpeech(ns);
+    } else {
+      setRunning(false);
+    }
+  }, [schedule, selectedDay, handleFinish]);
+
+  const pendingAdvanceRef = useRef(false);
+
   const tick = useCallback(() => {
     setTimeLeft(t => {
       if (t <= 1) {
-        playBeep("start");
-        setStepIdx(idx => {
-          const next = idx + 1;
-          if (next < schedule.length) {
-            const ns = schedule[next];
-            setTimeLeft(ns.duration || 0);
-            prevTimeRef.current = ns.duration || 0;
-            setRamMsg(getRamMsg(ns.type));
-            if (["warmup","cooldown","work"].includes(ns.type)) setShowGuide(true);
-            else if (ns.type === "rest" || ns.type === "countdown") setShowGuide(false);
-            if (ns.type === "done") { setRunning(false); handleFinish(selectedDay); playBeep("done"); }
-            stepSpeech(ns);
-          } else setRunning(false);
-          return next;
-        });
+        pendingAdvanceRef.current = true;
         return 0;
       }
       // 残り10秒アナウンス
@@ -590,25 +95,19 @@ export default function WorkoutTimer() {
       if (t === 2) playBeep("last3");
       return t - 1;
     });
-  }, [schedule, selectedDay, handleFinish]);
+  }, []);
+
+  // ステップ遷移を useEffect で処理（ネストした setState を回避）
+  useEffect(() => {
+    if (pendingAdvanceRef.current) {
+      pendingAdvanceRef.current = false;
+      advanceToStep(stepIdx + 1, "start");
+    }
+  });
 
   const skipToNext = useCallback(() => {
-    setStepIdx(idx => {
-      const next = idx + 1;
-      if (next < schedule.length) {
-        const ns = schedule[next];
-        setTimeLeft(ns.duration || 0);
-        prevTimeRef.current = ns.duration || 0;
-        setRamMsg(getRamMsg(ns.type));
-        if (["warmup","cooldown","work"].includes(ns.type)) setShowGuide(true);
-        else if (ns.type === "rest" || ns.type === "countdown") setShowGuide(false);
-        if (ns.type === "done") { setRunning(false); handleFinish(selectedDay); playBeep("done"); }
-        playBeep("start");
-        stepSpeech(ns);
-      } else setRunning(false);
-      return next;
-    });
-  }, [schedule, selectedDay, handleFinish]);
+    advanceToStep(stepIdx + 1, "start");
+  }, [stepIdx, advanceToStep]);
 
   useEffect(() => {
     if (running) intervalRef.current = setInterval(tick, 1000);
