@@ -102,3 +102,17 @@ export const EASY_DAY = {
     { name: "肩甲骨寄せ", reps: "15回", duration: 35, rest: 10 },
   ],
 };
+
+export const MORNING_DAY = {
+  label: "朝ストレッチ", theme: "ベッドで起床前", emoji: "🌅", color: "#FFA07A", sets: 1,
+  mainLabel: "🌅 朝のストレッチ",
+  warmup: [], cooldown: [],
+  exercises: [
+    { name: "おはよう全身伸び", reps: "10秒", duration: 15, rest: 5 },
+    { name: "膝抱えストレッチ", reps: "30秒", duration: 35, rest: 5 },
+    { name: "仰向けひねり", reps: "左右各20秒", duration: 45, rest: 5 },
+    { name: "脚上げストレッチ", reps: "左右各20秒", duration: 45, rest: 5 },
+    { name: "体側伸ばし（横向き）", reps: "左右各20秒", duration: 45, rest: 5 },
+    { name: "腹式呼吸", reps: "5回", duration: 40, rest: 0 },
+  ],
+};

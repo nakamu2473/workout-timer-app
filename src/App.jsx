@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 import { EXERCISE_GUIDE } from "./data/exerciseGuide.js";
-import { WEEK_ROTATIONS, EASY_DAY } from "./data/weekRotations.js";
+import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY } from "./data/weekRotations.js";
 import { getRamMsg } from "./data/ramMessages.js";
 
 import { getWeekIndex, buildSchedule } from "./utils/schedule.js";
@@ -39,6 +39,7 @@ export default function WorkoutTimer() {
 
   const getDayInfo = useCallback((key) => {
     if (key === "easy") return EASY_DAY;
+    if (key === "morning") return MORNING_DAY;
     return { ...weekData[key], sets: weekData.sets };
   }, [weekData]);
 
@@ -102,6 +103,7 @@ export default function WorkoutTimer() {
   // 残り秒数に応じた音声・電子音（状態更新関数の外で副作用を実行）
   useEffect(() => {
     if (!running) return;
+    console.log("[countdown] timeLeft:", timeLeft, "| running:", running);
     if (timeLeft === 11) speak("あと10秒！");
     if (timeLeft === 3 || timeLeft === 2 || timeLeft === 1) playBeep("last3");
   }, [timeLeft, running]);
@@ -158,7 +160,7 @@ export default function WorkoutTimer() {
     return history.filter(h => new Date(h.date) >= weekAgo).length;
   })();
 
-  const DAY_KEYS = ["day1", "day2", "day3", "easy"];
+  const DAY_KEYS = ["day1", "day2", "day3", "easy", "morning"];
 
   // Determine current phase label for display
   const currentPhase = currentStep?.type === "warmup" || (currentStep?.type === "countdown" && currentStep?.label?.includes("ウォーム")) ? "warmup"

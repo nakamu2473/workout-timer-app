@@ -1,4 +1,4 @@
-import { WEEK_ROTATIONS, EASY_DAY } from "../data/weekRotations.js";
+import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY } from "../data/weekRotations.js";
 
 // 2026年4月7日(月)を Week A 起点に4週サイクル
 export function getWeekIndex() {
@@ -10,7 +10,9 @@ export function getWeekIndex() {
 export function buildSchedule(dayKey) {
   const wi = getWeekIndex();
   const weekData = WEEK_ROTATIONS[wi];
-  const day = dayKey === "easy" ? EASY_DAY : { ...weekData[dayKey], sets: weekData.sets };
+  const day = dayKey === "easy" ? EASY_DAY
+    : dayKey === "morning" ? MORNING_DAY
+    : { ...weekData[dayKey], sets: weekData.sets };
   const { exercises, warmup, cooldown, sets } = day;
   const steps = [];
 
@@ -24,7 +26,8 @@ export function buildSchedule(dayKey) {
   }
 
   // MAIN WORK
-  steps.push({ type: "countdown", label: "💪 メインワークアウト", duration: 3, color: day.color || "#4ECDC4" });
+  const mainLabel = day.mainLabel || "💪 メインワークアウト";
+  steps.push({ type: "countdown", label: mainLabel, duration: 3, color: day.color || "#4ECDC4" });
   for (let set = 1; set <= sets; set++) {
     exercises.forEach((ex, i) => {
       steps.push({ type: "work", set, sets, name: ex.name, reps: ex.reps, duration: ex.duration });
