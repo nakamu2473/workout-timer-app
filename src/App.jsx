@@ -83,16 +83,16 @@ export default function WorkoutTimer() {
 
   const tick = useCallback(() => {
     setTimeLeft(t => {
+      // 残り10秒アナウンス
+      if (t === 11) speak("あと10秒！");
+      // 残り3秒カウントダウン（電子音）— t<=1より先に判定して1秒の音も鳴らす
+      if (t === 3) playBeep("last3");
+      if (t === 2) playBeep("last3");
+      if (t === 1) playBeep("last3");
       if (t <= 1) {
         pendingAdvanceRef.current = true;
         return 0;
       }
-      // 残り10秒アナウンス
-      if (t === 11) speak("あと10秒！");
-      // 残り3秒カウントダウン（電子音）
-      if (t === 4) playBeep("last3");
-      if (t === 3) playBeep("last3");
-      if (t === 2) playBeep("last3");
       return t - 1;
     });
   }, []);
