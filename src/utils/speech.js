@@ -39,6 +39,7 @@ export function stepSpeech(ns) {
   } else if (ns.type === "countdown") {
     if (ns.label && ns.label.includes("ウォーム")) speak("ウォームアップ、スタート！");
     else if (ns.label && ns.label.includes("クール")) speak("クールダウン、スタート！");
+    else if (ns.label && ns.label.includes("朝")) speak("朝のストレッチ、スタート！");
     else speak("メインワークアウト、スタート！");
   }
 }
