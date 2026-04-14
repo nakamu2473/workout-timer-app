@@ -7,13 +7,21 @@ export function getAudioCtx() {
   return _audioCtx;
 }
 
+// AudioContext を確実に running 状態にする（非同期）
+function ensureRunning(ctx) {
+  if (ctx.state !== "running") {
+    return ctx.resume().catch(() => {});
+  }
+  return Promise.resolve();
+}
+
 export function playBeep(type = "tick") {
   try {
     const ctx = getAudioCtx();
     console.log("[audio] playBeep:", type, "| state:", ctx.state, "| time:", ctx.currentTime.toFixed(2));
 
     const play = () => {
-      const now = ctx.currentTime;
+      const now = ctx.currentTime + 0.01; // 小さなバッファで過去スケジュールを防ぐ
       const beep = (freq, startTime, duration, volume = 0.25) => {
         const o = ctx.createOscillator();
         const g = ctx.createGain();
@@ -21,7 +29,7 @@ export function playBeep(type = "tick") {
         o.frequency.value = freq;
         g.gain.setValueAtTime(volume, startTime);
         g.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-        o.start(startTime); o.stop(startTime + duration);
+        o.start(startTime); o.stop(startTime + duration + 0.01);
       };
       if (type === "start") {
         beep(880, now, 0.1, 0.3);
@@ -29,16 +37,13 @@ export function playBeep(type = "tick") {
       } else if (type === "done") {
         [523, 659, 784, 1047].forEach((f, i) => beep(f, now + i * 0.12, 0.3));
       } else if (type === "last3") {
-        beep(440, now, 0.2, 0.3);
+        beep(440, now, 0.2, 0.35);
       }
     };
 
-    // suspended状態のとき resume() してから再生する（非同期）
-    if (ctx.state === "suspended") {
-      ctx.resume().then(play);
-    } else {
-      play();
-    }
+    ensureRunning(ctx).then(play).catch(err => {
+      console.warn("[audio] resume failed:", err);
+    });
   } catch (e) {
     console.error("[audio] playBeep error:", e);
   }
@@ -48,6 +53,15 @@ export function playBeep(type = "tick") {
 export function unlockAudio() {
   try {
     const ctx = getAudioCtx();
-    if (ctx.state === "suspended") ctx.resume();
+    ensureRunning(ctx);
   } catch (e) { /* ignore */ }
+}
+
+// ページがバックグラウンドから復帰したときに AudioContext を再開する
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && _audioCtx) {
+      ensureRunning(_audioCtx);
+    }
+  });
 }
