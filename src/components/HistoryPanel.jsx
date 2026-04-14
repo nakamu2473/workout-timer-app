@@ -1,4 +1,4 @@
-import { WEEK_ROTATIONS, EASY_DAY } from "../data/weekRotations.js";
+import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY } from "../data/weekRotations.js";
 import { getWeekIndex } from "../utils/schedule.js";
 import { formatDate } from "../utils/storage.js";
 
@@ -17,7 +17,7 @@ export default function HistoryPanel({ history, onClose, onDelete }) {
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
             {[...history].reverse().map((r, i) => {
-              const d = r.dayKey === "easy" ? EASY_DAY : (weekData[r.dayKey] || EASY_DAY);
+              const d = r.dayKey === "easy" ? EASY_DAY : r.dayKey === "morning" ? MORNING_DAY : (weekData[r.dayKey] || EASY_DAY);
               return (
                 <div key={i} style={{ background: `${d.color}14`, border: `1px solid ${d.color}33`, borderRadius: 14, padding: "11px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>

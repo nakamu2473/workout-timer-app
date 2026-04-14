@@ -33,6 +33,7 @@ export default function WorkoutTimer() {
   const startTimeRef = useRef(null);
   const prevTimeRef = useRef(null);
   const timeLeftRef = useRef(0);
+  const currentStepRef = useRef(null);
 
   const [weekIdx, setWeekIdx] = useState(() => {
     const saved = localStorage.getItem("ram_week_idx");
@@ -98,8 +99,13 @@ export default function WorkoutTimer() {
 
   const tick = useCallback(() => {
     const t = timeLeftRef.current;
+    const cs = currentStepRef.current;
     if (t === 11) speak("あと10秒！");
     if (t === 3 || t === 2 || t === 1) playBeep("last3");
+    // 左右がある種目は中間地点で「左右交代」を読み上げる
+    if (cs?.reps?.includes("左右") && cs.duration > 6 && t === Math.ceil((cs.duration || 0) / 2)) {
+      speak("左右交代");
+    }
     setTimeLeft(prev => {
       if (prev <= 1) {
         pendingAdvanceRef.current = true;
@@ -109,9 +115,10 @@ export default function WorkoutTimer() {
     });
   }, []);
 
-  // timeLeftRef の同期 + ステップ遷移を毎レンダー後に処理
+  // timeLeftRef / currentStepRef の同期 + ステップ遷移を毎レンダー後に処理
   useEffect(() => {
     timeLeftRef.current = timeLeft;
+    currentStepRef.current = currentStep;
     if (pendingAdvanceRef.current) {
       pendingAdvanceRef.current = false;
       advanceToStep(stepIdx + 1, "start");
@@ -165,10 +172,9 @@ export default function WorkoutTimer() {
   const cooldownCurrent = currentStep?.type === "cooldown"
     ? cooldownSteps.findIndex(s => schedule.indexOf(s) === stepIdx) + 1 : 0;
 
-  const weekCount = (() => {
-    const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000);
-    return history.filter(h => new Date(h.date) >= weekAgo).length;
-  })();
+  const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000);
+  const weekCount = history.filter(h => new Date(h.date) >= weekAgo && h.dayKey !== "morning").length;
+  const stretchCount = history.filter(h => new Date(h.date) >= weekAgo && h.dayKey === "morning").length;
 
   const DAY_KEYS = ["day1", "day2", "day3", "easy", "morning"];
 
@@ -222,13 +228,23 @@ export default function WorkoutTimer() {
       </div>
 
       {/* Streak */}
-      <div style={{ width: "100%", maxWidth: 390, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, padding: "9px 14px", marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ width: "100%", maxWidth: 390, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, padding: "9px 14px", marginBottom: 6, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>今週のワークアウト</div>
         <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
           {[0,1,2].map(i => (
             <div key={i} style={{ width: 26, height: 26, borderRadius: "50%", background: i < weekCount ? "#FFD93D" : "rgba(255,255,255,0.1)", border: `2px solid ${i < weekCount ? "#FFD93D" : "rgba(255,255,255,0.15)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>{i < weekCount ? "⭐" : ""}</div>
           ))}
           <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginLeft: 3 }}>{weekCount}/3</span>
+        </div>
+      </div>
+      {/* Stretch record */}
+      <div style={{ width: "100%", maxWidth: 390, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,160,122,0.2)", borderRadius: 14, padding: "7px 14px", marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>今週の朝ストレッチ</div>
+        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+          {[0,1,2,3,4,5,6].map(i => (
+            <div key={i} style={{ width: 18, height: 18, borderRadius: "50%", background: i < stretchCount ? "#FFA07A" : "rgba(255,255,255,0.08)", border: `1px solid ${i < stretchCount ? "#FFA07A" : "rgba(255,255,255,0.12)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9 }}>{i < stretchCount ? "🌅" : ""}</div>
+          ))}
+          <span style={{ fontSize: 11, color: "rgba(255,160,122,0.6)", marginLeft: 3 }}>{stretchCount}回</span>
         </div>
       </div>
 
