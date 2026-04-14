@@ -1,17 +1,31 @@
+import { speakVoicevox, cancelVoicevox } from "./voicevox.js";
+
 let _selectedVoice = null;
+let _useVoicevox = localStorage.getItem("ram_voice_mode") === "voicevox";
 
-export function getSelectedVoice() {
-  return _selectedVoice;
-}
-
+export function getSelectedVoice() { return _selectedVoice; }
 export function setSelectedVoice(v) {
   _selectedVoice = v;
+  _useVoicevox = false;
+  localStorage.setItem("ram_voice_mode", "browser");
+}
+
+export function getUseVoicevox() { return _useVoicevox; }
+export function setUseVoicevox(enabled) {
+  _useVoicevox = enabled;
+  localStorage.setItem("ram_voice_mode", enabled ? "voicevox" : "browser");
 }
 
 export function speak(text, voice) {
+  if (_useVoicevox) {
+    try { window.speechSynthesis?.cancel(); } catch (e) {}
+    speakVoicevox(text);
+    return;
+  }
   try {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
+    cancelVoicevox();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "ja-JP";
     u.rate = 1.05;
@@ -37,9 +51,9 @@ export function stepSpeech(ns) {
   } else if (ns.type === "done") {
     speak("お疲れさまだっちゃ！全部完了！最高だっちゃ！");
   } else if (ns.type === "countdown") {
-    if (ns.label && ns.label.includes("ウォーム")) speak("ウォームアップ、スタート！");
-    else if (ns.label && ns.label.includes("クール")) speak("クールダウン、スタート！");
-    else if (ns.label && ns.label.includes("朝")) speak("朝のストレッチ、スタート！");
+    if (ns.label?.includes("ウォーム")) speak("ウォームアップ、スタート！");
+    else if (ns.label?.includes("クール")) speak("クールダウン、スタート！");
+    else if (ns.label?.includes("朝")) speak("朝のストレッチ、スタート！");
     else speak("メインワークアウト、スタート！");
   }
 }
