@@ -7,8 +7,8 @@ export function getWeekIndex() {
   return ((Math.floor(diffDays / 7) % 4) + 4) % 4;
 }
 
-export function buildSchedule(dayKey) {
-  const wi = getWeekIndex();
+export function buildSchedule(dayKey, weekIdx) {
+  const wi = weekIdx !== undefined ? weekIdx : getWeekIndex();
   const weekData = WEEK_ROTATIONS[wi];
   const day = dayKey === "easy" ? EASY_DAY
     : dayKey === "morning" ? MORNING_DAY
