@@ -1,14 +1,23 @@
 import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY } from "../data/weekRotations.js";
+import { STORAGE_KEY } from "./storage.js";
 
-// 2026年4月7日(月)を Week A 起点に4週サイクル
+// 最初の記録日を起点に4週サイクル（記録なしは Week A）
 export function getWeekIndex() {
-  const start = new Date(2026, 3, 7);
-  const diffDays = Math.floor((new Date() - start) / (24 * 3600 * 1000));
-  return ((Math.floor(diffDays / 7) % 4) + 4) % 4;
+  try {
+    const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    if (history.length === 0) return 0;
+    const firstDate = new Date(
+      history.map(h => h.date).sort()[0]
+    );
+    const diffDays = Math.floor((new Date() - firstDate) / (24 * 3600 * 1000));
+    return ((Math.floor(diffDays / 7) % 4) + 4) % 4;
+  } catch (e) {
+    return 0;
+  }
 }
 
-export function buildSchedule(dayKey) {
-  const wi = getWeekIndex();
+export function buildSchedule(dayKey, weekIdx) {
+  const wi = weekIdx !== undefined ? weekIdx : getWeekIndex();
   const weekData = WEEK_ROTATIONS[wi];
   const day = dayKey === "easy" ? EASY_DAY
     : dayKey === "morning" ? MORNING_DAY

@@ -33,8 +33,21 @@ export default function WorkoutTimer() {
   const startTimeRef = useRef(null);
   const prevTimeRef = useRef(null);
 
-  const wi = getWeekIndex();
+  const [weekIdx, setWeekIdx] = useState(() => {
+    const saved = localStorage.getItem("ram_week_idx");
+    return saved !== null ? Number(saved) : getWeekIndex();
+  });
+  const wi = weekIdx;
   const weekData = WEEK_ROTATIONS[wi];
+
+  const handleWeekChange = (delta) => {
+    const newWi = ((weekIdx + delta) % 4 + 4) % 4;
+    setWeekIdx(newWi);
+    localStorage.setItem("ram_week_idx", String(newWi));
+    setSelectedDay(null);
+    setSchedule([]);
+    setRunning(false);
+  };
   const currentStep = schedule[stepIdx] || null;
 
   const getDayInfo = useCallback((key) => {
@@ -54,14 +67,14 @@ export default function WorkoutTimer() {
   }, [weekData]);
 
   const startDay = useCallback((dayKey) => {
-    const s = buildSchedule(dayKey);
+    const s = buildSchedule(dayKey, weekIdx);
     setSchedule(s); setSelectedDay(dayKey);
     setStepIdx(0); setTimeLeft(s[0].duration);
     setRunning(false);
     setShowGuide(["warmup","cooldown"].includes(s[0].type));
     setRamMsg("準備できたらスタートだっちゃ！");
     startTimeRef.current = null;
-  }, []);
+  }, [weekIdx]);
 
   const advanceToStep = useCallback((nextIdx, beepType) => {
     if (nextIdx < schedule.length) {
@@ -191,11 +204,13 @@ export default function WorkoutTimer() {
             <span style={{ animation: "ram-bounce 2s ease-in-out infinite", display: "inline-block", marginRight: 6 }}>🌟</span>
             ラムの筋トレ
           </h1>
-          <div style={{ display: "flex", gap: 6, marginTop: 3, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 4, marginTop: 3, alignItems: "center" }}>
             <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>週3日・1日10分</span>
-            <span style={{ fontSize: 10, background: `${["#FF6B6B","#4ECDC4","#FFD93D","#a29bfe"][wi]}33`, border: `1px solid ${["#FF6B6B","#4ECDC4","#FFD93D","#a29bfe"][wi]}66`, borderRadius: 99, padding: "1px 8px", color: ["#FF6B6B","#4ECDC4","#FFD93D","#a29bfe"][wi], fontWeight: 700 }}>
+            <button className="btn" onClick={() => handleWeekChange(-1)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", fontSize: 11, padding: "0 2px", lineHeight: 1 }}>◀</button>
+            <span style={{ fontSize: 10, background: `${["#FF6B6B","#4ECDC4","#FFD93D","#a29bfe"][wi]}33`, border: `1px solid ${["#FF6B6B","#4ECDC4","#FFD93D","#a29bfe"][wi]}66`, borderRadius: 99, padding: "1px 8px", color: ["#FF6B6B","#4ECDC4","#FFD93D","#a29bfe"][wi], fontWeight: 700, cursor: "pointer", userSelect: "none" }}>
               {weekData.label} {weekData.sublabel}
             </span>
+            <button className="btn" onClick={() => handleWeekChange(1)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", fontSize: 11, padding: "0 2px", lineHeight: 1 }}>▶</button>
           </div>
         </div>
         <div style={{ display: "flex", gap: 6 }}>
