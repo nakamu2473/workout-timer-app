@@ -32,6 +32,7 @@ export default function WorkoutTimer() {
   const intervalRef = useRef(null);
   const startTimeRef = useRef(null);
   const prevTimeRef = useRef(null);
+  const timeLeftRef = useRef(0);
 
   const [weekIdx, setWeekIdx] = useState(() => {
     const saved = localStorage.getItem("ram_week_idx");
@@ -96,30 +97,26 @@ export default function WorkoutTimer() {
   const pendingAdvanceRef = useRef(false);
 
   const tick = useCallback(() => {
-    setTimeLeft(t => {
-      if (t <= 1) {
+    const t = timeLeftRef.current;
+    if (t === 11) speak("あと10秒！");
+    if (t === 3 || t === 2 || t === 1) playBeep("last3");
+    setTimeLeft(prev => {
+      if (prev <= 1) {
         pendingAdvanceRef.current = true;
         return 0;
       }
-      return t - 1;
+      return prev - 1;
     });
   }, []);
 
-  // ステップ遷移を useEffect で処理（ネストした setState を回避）
+  // timeLeftRef の同期 + ステップ遷移を毎レンダー後に処理
   useEffect(() => {
+    timeLeftRef.current = timeLeft;
     if (pendingAdvanceRef.current) {
       pendingAdvanceRef.current = false;
       advanceToStep(stepIdx + 1, "start");
     }
   });
-
-  // 残り秒数に応じた音声・電子音（状態更新関数の外で副作用を実行）
-  useEffect(() => {
-    if (!running) return;
-    console.log("[countdown] timeLeft:", timeLeft, "| running:", running);
-    if (timeLeft === 11) speak("あと10秒！");
-    if (timeLeft === 3 || timeLeft === 2 || timeLeft === 1) playBeep("last3");
-  }, [timeLeft, running]);
 
   const skipToNext = useCallback(() => {
     advanceToStep(stepIdx + 1, "start");
@@ -281,11 +278,17 @@ export default function WorkoutTimer() {
               : currentStep.label || "休憩"}
           </div>
           {(currentStep.type === "work" || currentStep.type === "warmup" || currentStep.type === "cooldown") && (
-            <div style={{ fontSize: 13, color: activeColor, marginBottom: 8, fontWeight: 700 }}>目安: {currentStep.reps}</div>
+            <div style={{ fontSize: 13, color: activeColor, marginBottom: 4, fontWeight: 700 }}>目安: {currentStep.reps}</div>
           )}
-          {currentStep.type === "rest" && currentStep.nextName && (
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginBottom: 8 }}>次: {currentStep.nextName}</div>
-          )}
+          {(() => {
+            const next = schedule[stepIdx + 1];
+            if (!next || next.type === "done") return null;
+            let label = "";
+            if (["work","warmup","cooldown"].includes(next.type)) label = next.name;
+            else if (next.type === "rest") label = `休憩 ${next.duration}秒`;
+            else if (next.type === "countdown") label = next.label;
+            return label ? <div style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", marginBottom: 8 }}>次: {label}</div> : null;
+          })()}
 
           {/* Guide toggle — 全種目常に表示、閉じるボタンあり */}
           {/* Guide card */}
@@ -329,7 +332,7 @@ export default function WorkoutTimer() {
           {currentStep.type !== "done" ? (
             <div style={{ display: "flex", gap: 9, justifyContent: "center" }}>
               <button className="btn" onClick={handleStartPause} style={{ background: running ? "rgba(255,255,255,0.12)" : `linear-gradient(135deg, ${activeColor}, ${activeColor}bb)`, border: "none", borderRadius: 13, padding: "12px 28px", color: running ? "#fff" : "#000", fontSize: 15, fontWeight: 900, fontFamily: "inherit" }}>
-                {running ? "⏸ 一時停止" : currentStep.type === "countdown" ? "▶ 次へ進むっちゃ" : "▶ スタート"}
+                {running ? "⏸ 一時停止" : "▶ スタート"}
               </button>
               {currentStep.type === "rest" && running && (
                 <button className="btn" onClick={skipToNext} style={{ background: `${activeColor}33`, border: `1px solid ${activeColor}77`, borderRadius: 13, padding: "12px 14px", color: activeColor, fontSize: 13, fontWeight: 900, fontFamily: "inherit" }}>→ 次へ</button>
@@ -346,19 +349,53 @@ export default function WorkoutTimer() {
         </div>
       )}
 
-      {/* Step list — main exercises only */}
-      {selectedDay && currentStep?.type !== "done" && dayInfo?.exercises && (
+      {/* Step list — warmup + main + cooldown */}
+      {selectedDay && currentStep?.type !== "done" && dayInfo && (
         <div style={{ width: "100%", maxWidth: 390 }}>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 7, letterSpacing: 1 }}>── メインメニュー（タップでやり方確認）──</div>
+          {/* Warmup */}
+          {dayInfo.warmup && dayInfo.warmup.length > 0 && (<>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 7, letterSpacing: 1 }}>── ウォームアップ ──</div>
+            {dayInfo.warmup.map((ex, i) => {
+              const key = `w${i}`; const col = "#F0A500";
+              const ws = schedule.filter(s => s.type === "warmup" && s.name === ex.name);
+              const allDone = ws.length > 0 && ws.every(s => schedule.indexOf(s) < stepIdx);
+              const isCurrent = currentStep?.type === "warmup" && currentStep.name === ex.name;
+              const isOpen = openGuideIdx === key;
+              const g = EXERCISE_GUIDE[ex.name];
+              return (
+                <div key={key} style={{ marginBottom: 6 }}>
+                  <div className="btn" onClick={() => g && setOpenGuideIdx(isOpen ? null : key)} style={{ background: isCurrent ? `${col}20` : allDone ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.05)", border: isCurrent ? `1px solid ${col}77` : isOpen ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.07)", borderRadius: isOpen ? "11px 11px 0 0" : 11, padding: "10px 13px", display: "flex", justifyContent: "space-between", alignItems: "center", opacity: allDone ? 0.38 : 1, cursor: g ? "pointer" : "default" }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: 13 }}>{allDone ? "✓ " : isCurrent ? "▶ " : ""}{ex.name}</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>{ex.reps}</div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      {g && <div style={{ fontSize: 10, color: isOpen ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.25)" }}>{isOpen ? "▲" : "▼"}</div>}
+                      <div style={{ fontSize: 11, color: isCurrent ? col : "rgba(255,255,255,0.3)", fontWeight: 700 }}>{ex.duration}秒</div>
+                    </div>
+                  </div>
+                  {isOpen && g && (
+                    <div style={{ background: `${col}0e`, border: `1px solid rgba(255,255,255,0.07)`, borderTop: "none", borderRadius: "0 0 11px 11px", padding: "12px 13px" }}>
+                      {g.points.map((p, pi) => (<div key={pi} style={{ display: "flex", gap: 8, marginBottom: 6, alignItems: "flex-start" }}><div style={{ minWidth: 18, height: 18, borderRadius: "50%", background: col, color: "#000", fontWeight: 900, fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>{pi+1}</div><div style={{ fontSize: 12, color: "rgba(255,255,255,0.8)", lineHeight: 1.5 }}>{p}</div></div>))}
+                      <div style={{ background: `${col}18`, borderRadius: 8, padding: "7px 10px", fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 6, lineHeight: 1.5 }}>💡 {g.tip}</div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </>)}
+          {/* Main */}
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 7, marginTop: dayInfo.warmup?.length > 0 ? 10 : 0, letterSpacing: 1 }}>── メインメニュー（タップでやり方確認）──</div>
           {dayInfo.exercises.map((ex, i) => {
+            const key = `m${i}`;
             const ws = schedule.filter(s => s.type === "work" && s.name === ex.name);
             const allDone = ws.length > 0 && ws.every(s => schedule.indexOf(s) < stepIdx);
             const isCurrent = currentStep?.type === "work" && currentStep.name === ex.name;
-            const isOpen = openGuideIdx === i;
+            const isOpen = openGuideIdx === key;
             const g = EXERCISE_GUIDE[ex.name];
             return (
-              <div key={i} style={{ marginBottom: 6 }}>
-                <div className="btn" onClick={() => setOpenGuideIdx(isOpen ? null : i)} style={{ background: isCurrent ? `${dayInfo.color}20` : allDone ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.05)", border: isCurrent ? `1px solid ${dayInfo.color}77` : isOpen ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.07)", borderRadius: isOpen ? "11px 11px 0 0" : 11, padding: "10px 13px", display: "flex", justifyContent: "space-between", alignItems: "center", opacity: allDone ? 0.38 : 1, cursor: "pointer" }}>
+              <div key={key} style={{ marginBottom: 6 }}>
+                <div className="btn" onClick={() => setOpenGuideIdx(isOpen ? null : key)} style={{ background: isCurrent ? `${dayInfo.color}20` : allDone ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.05)", border: isCurrent ? `1px solid ${dayInfo.color}77` : isOpen ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.07)", borderRadius: isOpen ? "11px 11px 0 0" : 11, padding: "10px 13px", display: "flex", justifyContent: "space-between", alignItems: "center", opacity: allDone ? 0.38 : 1, cursor: "pointer" }}>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: 13 }}>{allDone ? "✓ " : isCurrent ? "▶ " : ""}{ex.name}</div>
                     <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>{ex.reps}</div>
@@ -370,18 +407,45 @@ export default function WorkoutTimer() {
                 </div>
                 {isOpen && g && (
                   <div style={{ background: `${dayInfo.color}0e`, border: `1px solid rgba(255,255,255,0.07)`, borderTop: "none", borderRadius: "0 0 11px 11px", padding: "12px 13px" }}>
-                    {g.points.map((p, pi) => (
-                      <div key={pi} style={{ display: "flex", gap: 8, marginBottom: 6, alignItems: "flex-start" }}>
-                        <div style={{ minWidth: 18, height: 18, borderRadius: "50%", background: dayInfo.color, color: "#000", fontWeight: 900, fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>{pi+1}</div>
-                        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.8)", lineHeight: 1.5 }}>{p}</div>
-                      </div>
-                    ))}
+                    {g.points.map((p, pi) => (<div key={pi} style={{ display: "flex", gap: 8, marginBottom: 6, alignItems: "flex-start" }}><div style={{ minWidth: 18, height: 18, borderRadius: "50%", background: dayInfo.color, color: "#000", fontWeight: 900, fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>{pi+1}</div><div style={{ fontSize: 12, color: "rgba(255,255,255,0.8)", lineHeight: 1.5 }}>{p}</div></div>))}
                     <div style={{ background: `${dayInfo.color}18`, borderRadius: 8, padding: "7px 10px", fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 6, lineHeight: 1.5 }}>💡 {g.tip}</div>
                   </div>
                 )}
               </div>
             );
           })}
+          {/* Cooldown */}
+          {dayInfo.cooldown && dayInfo.cooldown.length > 0 && (<>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 7, marginTop: 10, letterSpacing: 1 }}>── クールダウン ──</div>
+            {dayInfo.cooldown.map((ex, i) => {
+              const key = `c${i}`; const col = "#5DADE2";
+              const ws = schedule.filter(s => s.type === "cooldown" && s.name === ex.name);
+              const allDone = ws.length > 0 && ws.every(s => schedule.indexOf(s) < stepIdx);
+              const isCurrent = currentStep?.type === "cooldown" && currentStep.name === ex.name;
+              const isOpen = openGuideIdx === key;
+              const g = EXERCISE_GUIDE[ex.name];
+              return (
+                <div key={key} style={{ marginBottom: 6 }}>
+                  <div className="btn" onClick={() => g && setOpenGuideIdx(isOpen ? null : key)} style={{ background: isCurrent ? `${col}20` : allDone ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.05)", border: isCurrent ? `1px solid ${col}77` : isOpen ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.07)", borderRadius: isOpen ? "11px 11px 0 0" : 11, padding: "10px 13px", display: "flex", justifyContent: "space-between", alignItems: "center", opacity: allDone ? 0.38 : 1, cursor: g ? "pointer" : "default" }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: 13 }}>{allDone ? "✓ " : isCurrent ? "▶ " : ""}{ex.name}</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>{ex.reps}</div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      {g && <div style={{ fontSize: 10, color: isOpen ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.25)" }}>{isOpen ? "▲" : "▼"}</div>}
+                      <div style={{ fontSize: 11, color: isCurrent ? col : "rgba(255,255,255,0.3)", fontWeight: 700 }}>{ex.duration}秒</div>
+                    </div>
+                  </div>
+                  {isOpen && g && (
+                    <div style={{ background: `${col}0e`, border: `1px solid rgba(255,255,255,0.07)`, borderTop: "none", borderRadius: "0 0 11px 11px", padding: "12px 13px" }}>
+                      {g.points.map((p, pi) => (<div key={pi} style={{ display: "flex", gap: 8, marginBottom: 6, alignItems: "flex-start" }}><div style={{ minWidth: 18, height: 18, borderRadius: "50%", background: col, color: "#000", fontWeight: 900, fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>{pi+1}</div><div style={{ fontSize: 12, color: "rgba(255,255,255,0.8)", lineHeight: 1.5 }}>{p}</div></div>))}
+                      <div style={{ background: `${col}18`, borderRadius: 8, padding: "7px 10px", fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 6, lineHeight: 1.5 }}>💡 {g.tip}</div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </>)}
         </div>
       )}
 

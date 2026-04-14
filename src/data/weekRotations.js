@@ -15,7 +15,7 @@ export const WEEK_ROTATIONS = [
     day2: { label: "Day 2", theme: "上半身", emoji: "💪", color: "#4ECDC4", warmup: WARMUP_UPPER, cooldown: COOLDOWN_UPPER,
       exercises: [
         { name: "膝つき腕立て", reps: "10回", duration: 40, rest: 20 },
-        { name: "パイク腕立て", reps: "8回", duration: 40, rest: 20 },
+        { name: "ナロー腕立て", reps: "8回", duration: 40, rest: 20 },
         { name: "肩まわし", reps: "20回", duration: 30, rest: 20 },
       ]},
     day3: { label: "Day 3", theme: "体幹", emoji: "🔥", color: "#FFD93D", warmup: WARMUP_CORE, cooldown: COOLDOWN_CORE,
@@ -37,8 +37,8 @@ export const WEEK_ROTATIONS = [
     day2: { label: "Day 2", theme: "上半身B", emoji: "💪", color: "#4ECDC4", warmup: WARMUP_UPPER, cooldown: COOLDOWN_UPPER,
       exercises: [
         { name: "腕立て伏せ", reps: "8回", duration: 40, rest: 20 },
-        { name: "パイク腕立て", reps: "10回", duration: 45, rest: 20 },
-        { name: "トライセプスディップス", reps: "10回", duration: 40, rest: 20 },
+        { name: "ナロー腕立て", reps: "10回", duration: 45, rest: 20 },
+        { name: "リバースプランク", reps: "15秒×2", duration: 40, rest: 20 },
       ]},
     day3: { label: "Day 3", theme: "体幹B", emoji: "🔥", color: "#FFD93D", warmup: WARMUP_CORE, cooldown: COOLDOWN_CORE,
       exercises: [
@@ -60,7 +60,7 @@ export const WEEK_ROTATIONS = [
       exercises: [
         { name: "腕立て伏せ", reps: "10回", duration: 45, rest: 20 },
         { name: "ダイヤモンド腕立て", reps: "8回", duration: 40, rest: 20 },
-        { name: "トライセプスディップス", reps: "12回", duration: 45, rest: 20 },
+        { name: "リバースプランク", reps: "20秒×2", duration: 50, rest: 20 },
       ]},
     day3: { label: "Day 3", theme: "体幹C", emoji: "🔥", color: "#FFD93D", warmup: WARMUP_CORE, cooldown: COOLDOWN_CORE,
       exercises: [
@@ -81,7 +81,7 @@ export const WEEK_ROTATIONS = [
       exercises: [
         { name: "腕立て伏せ", reps: "12回", duration: 50, rest: 25 },
         { name: "ダイヤモンド腕立て", reps: "10回", duration: 45, rest: 25 },
-        { name: "パイク腕立て", reps: "12回", duration: 50, rest: 25 },
+        { name: "ナロー腕立て", reps: "12回", duration: 50, rest: 25 },
       ]},
     day3: { label: "Day 3", theme: "体幹D", emoji: "🔥", color: "#FFD93D", warmup: WARMUP_CORE, cooldown: COOLDOWN_CORE,
       exercises: [
