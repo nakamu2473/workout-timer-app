@@ -103,6 +103,15 @@ export const EASY_DAY = {
   ],
 };
 
+export const WALK_DAY = {
+  label: "ウォーキング", theme: "週1回・有酸素", emoji: "🚶", color: "#7EC8E3", sets: 1,
+  mainLabel: "🚶 40分ウォーキング",
+  warmup: [], cooldown: [],
+  exercises: [
+    { name: "40分ウォーキング", reps: "40分", duration: 2400, rest: 0 },
+  ],
+};
+
 export const MORNING_DAY = {
   label: "朝ストレッチ", theme: "ベッドで起床前", emoji: "🌅", color: "#FFA07A", sets: 1,
   mainLabel: "🌅 朝のストレッチ",
