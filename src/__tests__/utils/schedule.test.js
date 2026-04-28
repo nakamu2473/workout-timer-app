@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { buildSchedule, getWeekIndex } from '../../utils/schedule.js';
 import { STORAGE_KEY } from '../../utils/storage.js';
-import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, WALK_DAY } from '../../data/weekRotations.js';
+import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, WALK_DAY, EVENING_DAY } from '../../data/weekRotations.js';
 
 beforeEach(() => {
   localStorage.clear();
@@ -244,6 +244,31 @@ describe('buildSchedule – MORNING_DAY', () => {
   it('has the morning stretch main countdown label', () => {
     const countdowns = getStepsByType(steps, 'countdown');
     expect(countdowns.some(s => s.label && s.label.includes('朝'))).toBe(true);
+  });
+});
+
+// ─── buildSchedule – EVENING_DAY ────────────────────────────────────────────
+
+describe('buildSchedule – EVENING_DAY', () => {
+  const steps = buildSchedule('evening', 0);
+
+  it('ends with done step', () => {
+    expect(steps[steps.length - 1].type).toBe('done');
+  });
+
+  it('generates correct number of work steps', () => {
+    const workSteps = getStepsByType(steps, 'work');
+    expect(workSteps).toHaveLength(EVENING_DAY.exercises.length);
+  });
+
+  it('has no warmup or cooldown steps', () => {
+    expect(countByType(steps, 'warmup')).toBe(0);
+    expect(countByType(steps, 'cooldown')).toBe(0);
+  });
+
+  it('has the evening stretch main countdown label', () => {
+    const countdowns = getStepsByType(steps, 'countdown');
+    expect(countdowns.some(s => s.label && s.label.includes('夜'))).toBe(true);
   });
 });
 
