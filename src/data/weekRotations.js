@@ -121,7 +121,10 @@ export const MORNING_DAY = {
     { name: "膝抱えストレッチ", reps: "30秒", duration: 35, rest: 5 },
     { name: "仰向けひねり", reps: "左右各20秒", duration: 45, rest: 5 },
     { name: "脚上げストレッチ", reps: "左右各20秒", duration: 45, rest: 5 },
-    { name: "体側伸ばし（横向き）", reps: "左右各20秒", duration: 45, rest: 5 },
+    { name: "ふくらはぎ・足首まわし", reps: "左右10回ずつ", duration: 40, rest: 5 },
+    { name: "猫背ほぐし", reps: "10回", duration: 40, rest: 5 },
+    { name: "股関節ほぐし（バタフライ）", reps: "30秒", duration: 35, rest: 5 },
+    { name: "体側伸ばし（座位）", reps: "左右各20秒", duration: 45, rest: 5 },
     { name: "腹式呼吸", reps: "5回", duration: 40, rest: 0 },
   ],
 };
