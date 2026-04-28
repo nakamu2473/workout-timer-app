@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 import { EXERCISE_GUIDE } from "./data/exerciseGuide.js";
-import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, WALK_DAY } from "./data/weekRotations.js";
+import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, WALK_DAY, EVENING_DAY } from "./data/weekRotations.js";
 import { getRamMsg } from "./data/ramMessages.js";
 
 import { getWeekIndex, buildSchedule } from "./utils/schedule.js";
@@ -56,6 +56,7 @@ export default function WorkoutTimer() {
     if (key === "easy") return EASY_DAY;
     if (key === "morning") return MORNING_DAY;
     if (key === "walk") return WALK_DAY;
+    if (key === "evening") return EVENING_DAY;
     return { ...weekData[key], sets: weekData.sets };
   }, [weekData]);
 
@@ -174,11 +175,12 @@ export default function WorkoutTimer() {
     ? cooldownSteps.findIndex(s => schedule.indexOf(s) === stepIdx) + 1 : 0;
 
   const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000);
-  const weekCount = history.filter(h => new Date(h.date) >= weekAgo && h.dayKey !== "morning" && h.dayKey !== "walk").length;
+  const weekCount = history.filter(h => new Date(h.date) >= weekAgo && h.dayKey !== "morning" && h.dayKey !== "walk" && h.dayKey !== "evening").length;
   const stretchCount = history.filter(h => new Date(h.date) >= weekAgo && h.dayKey === "morning").length;
   const walkCount = history.filter(h => new Date(h.date) >= weekAgo && h.dayKey === "walk").length;
+  const eveningCount = history.filter(h => new Date(h.date) >= weekAgo && h.dayKey === "evening").length;
 
-  const DAY_KEYS = ["day1", "day2", "day3", "easy", "morning", "walk"];
+  const DAY_KEYS = ["day1", "day2", "day3", "easy", "morning", "evening", "walk"];
 
   // Determine current phase label for display
   const currentPhase = currentStep?.type === "warmup" || (currentStep?.type === "countdown" && currentStep?.label?.includes("ウォーム")) ? "warmup"
@@ -247,6 +249,16 @@ export default function WorkoutTimer() {
             <div key={i} style={{ width: 18, height: 18, borderRadius: "50%", background: i < stretchCount ? "#FFA07A" : "rgba(255,255,255,0.08)", border: `1px solid ${i < stretchCount ? "#FFA07A" : "rgba(255,255,255,0.12)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9 }}>{i < stretchCount ? "🌅" : ""}</div>
           ))}
           <span style={{ fontSize: 11, color: "rgba(255,160,122,0.6)", marginLeft: 3 }}>{stretchCount}回</span>
+        </div>
+      </div>
+      {/* Evening stretch record */}
+      <div style={{ width: "100%", maxWidth: 390, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(139,127,212,0.2)", borderRadius: 14, padding: "7px 14px", marginBottom: 6, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>今週の夜ストレッチ</div>
+        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+          {[0,1,2,3,4,5,6].map(i => (
+            <div key={i} style={{ width: 18, height: 18, borderRadius: "50%", background: i < eveningCount ? "#8B7FD4" : "rgba(255,255,255,0.08)", border: `1px solid ${i < eveningCount ? "#8B7FD4" : "rgba(255,255,255,0.12)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9 }}>{i < eveningCount ? "🌙" : ""}</div>
+          ))}
+          <span style={{ fontSize: 11, color: "rgba(139,127,212,0.6)", marginLeft: 3 }}>{eveningCount}回</span>
         </div>
       </div>
       {/* Walk record */}
