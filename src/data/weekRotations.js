@@ -129,6 +129,35 @@ export const MORNING_DAY = {
   ],
 };
 
+export const STRETCHING_DAY = {
+  label: "ストレッチ", theme: "じっくり25分", emoji: "🧘", color: "#7C6BAF", sets: 1,
+  mainLabel: "🧘 全身ストレッチ",
+  warmup: [], cooldown: [],
+  exercises: [
+    { name: "首の後ろで肘を開く", reps: "30秒", duration: 50, rest: 10 },
+    { name: "首の横伸ばし", reps: "左右各35秒", duration: 70, rest: 10 },
+    { name: "首の回旋ストレッチ", reps: "左右ゆっくり3〜5回", duration: 40, rest: 10 },
+    { name: "肩回し（クロール）", reps: "前後各10回", duration: 45, rest: 10 },
+    { name: "上腕三頭筋ストレッチ", reps: "左右各35秒", duration: 70, rest: 10 },
+    { name: "背骨ねじり", reps: "左右各35秒", duration: 70, rest: 10 },
+    { name: "胸を開くストレッチ", reps: "30秒", duration: 50, rest: 10 },
+    { name: "背骨丸めストレッチ", reps: "30秒", duration: 50, rest: 10 },
+    { name: "体側伸ばし（座位）", reps: "左右各30秒", duration: 60, rest: 10 },
+    { name: "針の糸通し", reps: "左右5回ずつ", duration: 90, rest: 10 },
+    { name: "猫背ほぐし", reps: "10回", duration: 50, rest: 10 },
+    { name: "正座で腕回し", reps: "前後各5回", duration: 50, rest: 10 },
+    { name: "脇の下ストレッチ", reps: "左右各35秒", duration: 70, rest: 10 },
+    { name: "肘固定で腕を横に開く", reps: "10回", duration: 55, rest: 10 },
+    { name: "チャイルドポーズ", reps: "45秒", duration: 55, rest: 10 },
+    { name: "お尻ストレッチ", reps: "左右各35秒", duration: 70, rest: 10 },
+    { name: "腸腰筋ストレッチ（仰向け）", reps: "左右各35秒", duration: 70, rest: 10 },
+    { name: "大腿四頭筋ストレッチ", reps: "左右各35秒", duration: 70, rest: 10 },
+    { name: "ハムストリングストレッチ", reps: "左右各30秒", duration: 60, rest: 10 },
+    { name: "コブラポーズ", reps: "20秒×2セット", duration: 55, rest: 10 },
+    { name: "内腿マッサージ→前屈", reps: "左右各40秒", duration: 90, rest: 0 },
+  ],
+};
+
 export const EVENING_DAY = {
   label: "夜ストレッチ", theme: "寝る前リラックス", emoji: "🌙", color: "#8B7FD4", sets: 1,
   mainLabel: "🌙 夜のストレッチ",
