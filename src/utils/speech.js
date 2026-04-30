@@ -54,6 +54,7 @@ export function stepSpeech(ns) {
     if (ns.label?.includes("ウォーム")) speak("ウォームアップ、スタート！");
     else if (ns.label?.includes("クール")) speak("クールダウン、スタート！");
     else if (ns.label?.includes("朝")) speak("朝のストレッチ、スタート！");
+    else if (ns.label?.includes("夜")) speak("夜のストレッチ、スタート！");
     else speak("メインワークアウト、スタート！");
   }
 }
