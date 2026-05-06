@@ -165,7 +165,7 @@ export const EVENING_DAY = {
   exercises: [
     { name: "首の横伸ばし", reps: "左右各20秒", duration: 45, rest: 5 },
     { name: "肩甲骨ほぐし", reps: "30秒", duration: 35, rest: 5 },
-    { name: "胸を開くストレッチ", reps: "20秒", duration: 25, rest: 5 },
+    { name: "寝ながら体側伸ばし", reps: "左右各20秒", duration: 45, rest: 5 },
     { name: "股関節ストレッチ", reps: "30秒", duration: 35, rest: 5 },
     { name: "チャイルドポーズ", reps: "30秒", duration: 35, rest: 5 },
     { name: "寝ながら腰ストレッチ", reps: "左右各20秒", duration: 45, rest: 5 },
