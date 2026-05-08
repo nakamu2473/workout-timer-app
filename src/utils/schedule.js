@@ -1,4 +1,4 @@
-import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, WALK_DAY, EVENING_DAY } from "../data/weekRotations.js";
+import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, EVENING_DAY } from "../data/weekRotations.js";
 import { STORAGE_KEY } from "./storage.js";
 
 // 最初の記録日を起点に4週サイクル（記録なしは Week A）
@@ -21,7 +21,6 @@ export function buildSchedule(dayKey, weekIdx) {
   const weekData = WEEK_ROTATIONS[wi];
   const day = dayKey === "easy" ? EASY_DAY
     : dayKey === "morning" ? MORNING_DAY
-    : dayKey === "walk" ? WALK_DAY
     : dayKey === "evening" ? EVENING_DAY
     : { ...weekData[dayKey], sets: weekData.sets };
   const { exercises, warmup, cooldown, sets } = day;

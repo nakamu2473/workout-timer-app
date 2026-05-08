@@ -103,15 +103,6 @@ export const EASY_DAY = {
   ],
 };
 
-export const WALK_DAY = {
-  label: "ウォーキング", theme: "週1回・有酸素", emoji: "🚶", color: "#7EC8E3", sets: 1,
-  mainLabel: "🚶 40分ウォーキング",
-  warmup: [], cooldown: [],
-  exercises: [
-    { name: "40分ウォーキング", reps: "40分", duration: 2400, rest: 0 },
-  ],
-};
-
 export const MORNING_DAY = {
   label: "朝ストレッチ", theme: "ベッドで起床前", emoji: "🌅", color: "#FFA07A", sets: 1,
   mainLabel: "🌅 朝のストレッチ",
@@ -119,9 +110,9 @@ export const MORNING_DAY = {
   exercises: [
     { name: "おはよう全身伸び", reps: "10秒", duration: 15, rest: 5 },
     { name: "膝抱えストレッチ", reps: "30秒", duration: 35, rest: 5 },
-    { name: "仰向けひねり", reps: "左右各20秒", duration: 45, rest: 5 },
-    { name: "脚上げストレッチ", reps: "左右各20秒", duration: 45, rest: 5 },
-    { name: "ふくらはぎ・足首まわし", reps: "左右10回ずつ", duration: 40, rest: 5 },
+    { name: "寝ながら腰ストレッチ", reps: "左右各20秒", duration: 45, rest: 5 },
+    { name: "ハムストリングストレッチ", reps: "左右各20秒", duration: 45, rest: 5 },
+    { name: "足首まわし", reps: "左右10回ずつ", duration: 40, rest: 5 },
     { name: "キャット&カウ", reps: "10回", duration: 40, rest: 5 },
     { name: "股関節ほぐし（バタフライ）", reps: "30秒", duration: 35, rest: 5 },
     { name: "体側伸ばし（座位）", reps: "左右各20秒", duration: 45, rest: 5 },
@@ -165,10 +156,10 @@ export const EVENING_DAY = {
   exercises: [
     { name: "首の横伸ばし", reps: "左右各20秒", duration: 45, rest: 5 },
     { name: "肩甲骨ほぐし", reps: "30秒", duration: 35, rest: 5 },
-    { name: "寝ながら体側伸ばし", reps: "左右各20秒", duration: 45, rest: 5 },
     { name: "股関節ストレッチ", reps: "30秒", duration: 35, rest: 5 },
     { name: "チャイルドポーズ", reps: "30秒", duration: 35, rest: 5 },
     { name: "寝ながら腰ストレッチ", reps: "左右各20秒", duration: 45, rest: 5 },
+    { name: "寝ながら体側伸ばし", reps: "左右各20秒", duration: 45, rest: 5 },
     { name: "お尻ストレッチ", reps: "左右各20秒", duration: 45, rest: 5 },
     { name: "ハムストリングストレッチ", reps: "左右各20秒", duration: 45, rest: 5 },
     { name: "腹式呼吸", reps: "5回", duration: 40, rest: 0 },
