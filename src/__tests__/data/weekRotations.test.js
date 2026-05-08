@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, WALK_DAY, EVENING_DAY } from '../../data/weekRotations.js';
+import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, EVENING_DAY } from '../../data/weekRotations.js';
 
 // ─── WEEK_ROTATIONS structure ─────────────────────────────────────────────────
 
@@ -87,28 +87,6 @@ describe('EASY_DAY', () => {
   it('has color and emoji', () => {
     expect(EASY_DAY.color).toMatch(/^#/);
     expect(EASY_DAY.emoji).toBeTruthy();
-  });
-});
-
-// ─── WALK_DAY ────────────────────────────────────────────────────────────────
-
-describe('WALK_DAY', () => {
-  it('has sets = 1', () => {
-    expect(WALK_DAY.sets).toBe(1);
-  });
-
-  it('has no warmup or cooldown', () => {
-    expect(WALK_DAY.warmup).toEqual([]);
-    expect(WALK_DAY.cooldown).toEqual([]);
-  });
-
-  it('has a single 40-minute walk exercise (2400 seconds)', () => {
-    expect(WALK_DAY.exercises).toHaveLength(1);
-    expect(WALK_DAY.exercises[0].duration).toBe(2400);
-  });
-
-  it('has a mainLabel for the main workout countdown', () => {
-    expect(WALK_DAY.mainLabel).toBeTruthy();
   });
 });
 

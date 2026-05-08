@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { buildSchedule, getWeekIndex } from '../../utils/schedule.js';
 import { STORAGE_KEY } from '../../utils/storage.js';
-import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, WALK_DAY, EVENING_DAY } from '../../data/weekRotations.js';
+import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, EVENING_DAY } from '../../data/weekRotations.js';
 
 beforeEach(() => {
   localStorage.clear();
@@ -197,28 +197,6 @@ describe('buildSchedule – EASY_DAY', () => {
     const cooldownSteps = getStepsByType(steps, 'cooldown');
     expect(cooldownSteps).toHaveLength(1);
     expect(cooldownSteps[0].name).toBe('腹式呼吸');
-  });
-});
-
-// ─── buildSchedule – WALK_DAY ───────────────────────────────────────────────
-
-describe('buildSchedule – WALK_DAY', () => {
-  const steps = buildSchedule('walk', 0);
-
-  it('ends with done step', () => {
-    expect(steps[steps.length - 1].type).toBe('done');
-  });
-
-  it('has exactly 1 work step (40-minute walk)', () => {
-    const workSteps = getStepsByType(steps, 'work');
-    expect(workSteps).toHaveLength(1);
-    expect(workSteps[0].name).toBe('40分ウォーキング');
-    expect(workSteps[0].duration).toBe(2400);
-  });
-
-  it('has no warmup or cooldown steps', () => {
-    expect(countByType(steps, 'warmup')).toBe(0);
-    expect(countByType(steps, 'cooldown')).toBe(0);
   });
 });
 
