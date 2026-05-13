@@ -38,18 +38,20 @@ export function buildSchedule(dayKey, weekIdx) {
   }
 
   // MAIN WORK
+  const isYoga = dayKey === "yoga";
   const mainLabel = day.mainLabel || "💪 メインワークアウト";
-  steps.push({ type: "countdown", label: mainLabel, duration: 3, color: day.color || "#4ECDC4" });
+  steps.push({ type: "countdown", label: mainLabel, duration: 3, color: day.color || "#4ECDC4", ...(isYoga && { yogaMode: true }) });
   for (let set = 1; set <= sets; set++) {
     exercises.forEach((ex, i) => {
-      steps.push({ type: "work", set, sets, name: ex.name, reps: ex.reps, duration: ex.duration });
+      steps.push({ type: "work", set, sets, name: ex.name, reps: ex.reps, duration: ex.duration, ...(ex.yogaScript && { yogaScript: true }) });
       const isLastInSet = i === exercises.length - 1;
       const isLastSet = set === sets;
-      if (!isLastSet || !isLastInSet) {
+      const restDuration = isLastInSet ? 30 : (ex.rest || 0);
+      if ((!isLastSet || !isLastInSet) && restDuration > 0) {
         const nextEx = isLastInSet ? exercises[0] : exercises[i + 1];
         steps.push({
           type: "rest",
-          duration: isLastInSet ? 30 : ex.rest,
+          duration: restDuration,
           label: isLastInSet ? `セット${set}完了！あと${sets - set}セットだっちゃ` : "休憩",
           nextName: nextEx?.name,
         });
@@ -66,6 +68,6 @@ export function buildSchedule(dayKey, weekIdx) {
     });
   }
 
-  steps.push({ type: "done", duration: 0 });
+  steps.push({ type: "done", duration: 0, ...(isYoga && { yogaMode: true }) });
   return steps;
 }

@@ -154,15 +154,14 @@ export const YOGA_DAY = {
   mainLabel: "🧘‍♀️ 寝たまんまヨガ",
   warmup: [], cooldown: [],
   exercises: [
-    { name: "足首ギュッと→ゆるめる",      reps: "5秒ギュッと→10秒ゆるめる",       duration: 25, rest: 5 },
-    { name: "ふくらはぎギュッと→ゆるめる", reps: "5秒ギュッと→10秒ゆるめる",       duration: 25, rest: 5 },
-    { name: "太ももギュッと→ゆるめる",    reps: "5秒ギュッと→10秒ゆるめる",       duration: 25, rest: 5 },
-    { name: "お腹ギュッと→ゆるめる",      reps: "5秒引き込んで→10秒ゆるめる",     duration: 25, rest: 5 },
-    { name: "手・腕ギュッと→ゆるめる",    reps: "5秒グーで握って→10秒パッと開く", duration: 25, rest: 5 },
-    { name: "肩ギュッと→ストンと落とす",  reps: "5秒すくめて→ストンと下ろす",     duration: 25, rest: 5 },
-    { name: "顔ギュッと→ゆるめる",        reps: "5秒しかめて→10秒ゆるめる",       duration: 25, rest: 5 },
-    { name: "全身ギュッと→全身リリース",  reps: "5秒全力→全部ストンと解放",       duration: 30, rest: 5 },
-    { name: "深呼吸・全身脱力",            reps: "ゆっくり5回呼吸",                 duration: 60, rest: 0 },
+    { name: "はじめに・呼吸を整える",  reps: "仰向けで深呼吸",             duration: 90, rest: 0, yogaScript: true },
+    { name: "足先（つま先・足首）",    reps: "5秒ギュッと→じっくりゆるめる", duration: 45, rest: 0, yogaScript: true },
+    { name: "太もも",                  reps: "5秒ギュッと→じっくりゆるめる", duration: 45, rest: 0, yogaScript: true },
+    { name: "お腹",                    reps: "5秒引き込んで→じっくりゆるめる", duration: 45, rest: 0, yogaScript: true },
+    { name: "両手・腕",                reps: "5秒握って→パッと開いてゆるめる", duration: 50, rest: 0, yogaScript: true },
+    { name: "肩と首",                  reps: "5秒すくめて→ストンと落とす",   duration: 40, rest: 0, yogaScript: true },
+    { name: "顔・表情筋",              reps: "5秒しかめて→じっくりゆるめる", duration: 50, rest: 0, yogaScript: true },
+    { name: "体全体・おやすみなさい",  reps: "全身を感じながら眠りへ",       duration: 70, rest: 0, yogaScript: true },
   ],
 };
 

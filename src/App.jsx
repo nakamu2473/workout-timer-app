@@ -91,8 +91,8 @@ export default function WorkoutTimer() {
       setRamMsg(getRamMsg(ns.type));
       if (["warmup","cooldown","work"].includes(ns.type)) setShowGuide(true);
       else if (ns.type === "rest" || ns.type === "countdown") setShowGuide(false);
-      if (ns.type === "done") { setRunning(false); releaseWakeLock(); handleFinish(selectedDay); playBeep("done"); }
-      playBeep(beepType);
+      if (ns.type === "done") { setRunning(false); releaseWakeLock(); handleFinish(selectedDay); if (!ns.yogaMode) playBeep("done"); }
+      if (!ns.yogaScript && !ns.yogaMode) playBeep(beepType);
       stepSpeech(ns);
     } else {
       setRunning(false);
@@ -104,8 +104,8 @@ export default function WorkoutTimer() {
   const tick = useCallback(() => {
     const t = timeLeftRef.current;
     const cs = currentStepRef.current;
-    if (t === 11) speak("あと10秒！");
-    if (t === 3 || t === 2 || t === 1) playBeep("last3");
+    if (t === 11 && !cs?.yogaScript) speak("あと10秒！");
+    if ((t === 3 || t === 2 || t === 1) && !cs?.yogaScript) playBeep("last3");
     // 左右がある種目は中間地点で「左右交代」を読み上げる
     if (cs?.reps?.includes("左右") && cs.duration > 6 && t === Math.ceil((cs.duration || 0) / 2)) {
       speak("左右交代");
@@ -148,7 +148,7 @@ export default function WorkoutTimer() {
       setRamMsg(getRamMsg(currentStep?.type || "work"));
       if (["warmup","cooldown","work"].includes(currentStep?.type)) setShowGuide(true);
       else if (currentStep?.type === "rest" || currentStep?.type === "countdown") setShowGuide(false);
-      playBeep("start");
+      if (!currentStep?.yogaMode && !currentStep?.yogaScript) playBeep("start");
       // 一時停止からの再開時は読み上げない、初回スタート時だけ
       if (isFirstStart) stepSpeech(currentStep);
     }
