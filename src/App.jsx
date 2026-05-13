@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 import { EXERCISE_GUIDE } from "./data/exerciseGuide.js";
-import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, EVENING_DAY, STRETCHING_DAY } from "./data/weekRotations.js";
+import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, EVENING_DAY, STRETCHING_DAY, YOGA_DAY } from "./data/weekRotations.js";
 import { getRamMsg } from "./data/ramMessages.js";
 
 import { getWeekIndex, buildSchedule } from "./utils/schedule.js";
@@ -58,6 +58,7 @@ export default function WorkoutTimer() {
     if (key === "morning") return MORNING_DAY;
     if (key === "evening") return EVENING_DAY;
     if (key === "stretching") return STRETCHING_DAY;
+    if (key === "yoga") return YOGA_DAY;
     return { ...weekData[key], sets: weekData.sets };
   }, [weekData]);
 
@@ -176,12 +177,13 @@ export default function WorkoutTimer() {
     ? cooldownSteps.findIndex(s => schedule.indexOf(s) === stepIdx) + 1 : 0;
 
   const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000);
-  const weekCount = history.filter(h => new Date(h.date) >= weekAgo && !["morning","evening","stretching"].includes(h.dayKey)).length;
+  const weekCount = history.filter(h => new Date(h.date) >= weekAgo && !["morning","evening","stretching","yoga"].includes(h.dayKey)).length;
   const stretchCount = history.filter(h => new Date(h.date) >= weekAgo && h.dayKey === "morning").length;
   const eveningCount = history.filter(h => new Date(h.date) >= weekAgo && h.dayKey === "evening").length;
   const deepStretchCount = history.filter(h => new Date(h.date) >= weekAgo && h.dayKey === "stretching").length;
+  const yogaCount = history.filter(h => new Date(h.date) >= weekAgo && h.dayKey === "yoga").length;
 
-  const DAY_KEYS = ["day1", "day2", "day3", "easy", "morning", "evening", "stretching"];
+  const DAY_KEYS = ["day1", "day2", "day3", "easy", "morning", "evening", "stretching", "yoga"];
 
   // Determine current phase label for display
   const currentPhase = currentStep?.type === "warmup" || (currentStep?.type === "countdown" && currentStep?.label?.includes("ウォーム")) ? "warmup"
@@ -272,6 +274,16 @@ export default function WorkoutTimer() {
           <span style={{ fontSize: 11, color: "rgba(124,107,175,0.6)", marginLeft: 3 }}>{deepStretchCount}回</span>
         </div>
       </div>
+      {/* Yoga record */}
+      <div style={{ width: "100%", maxWidth: 390, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(179,157,219,0.2)", borderRadius: 14, padding: "7px 14px", marginBottom: 6, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>今週の寝たまんまヨガ</div>
+        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+          {[0,1,2,3,4,5,6].map(i => (
+            <div key={i} style={{ width: 18, height: 18, borderRadius: "50%", background: i < yogaCount ? "#B39DDB" : "rgba(255,255,255,0.08)", border: `1px solid ${i < yogaCount ? "#B39DDB" : "rgba(255,255,255,0.12)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9 }}>{i < yogaCount ? "🧘‍♀️" : ""}</div>
+          ))}
+          <span style={{ fontSize: 11, color: "rgba(179,157,219,0.6)", marginLeft: 3 }}>{yogaCount}回</span>
+        </div>
+      </div>
 
       {/* RAM bubble */}
       <div style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 16, padding: "9px 18px", marginBottom: 14, fontSize: 14, fontWeight: 700, color: "#FFD93D", backdropFilter: "blur(8px)", maxWidth: 390, width: "100%", textAlign: "center" }}>
@@ -322,13 +334,16 @@ export default function WorkoutTimer() {
             <div style={{ fontSize: 13, color: activeColor, marginBottom: 4, fontWeight: 700 }}>目安: {currentStep.reps}</div>
           )}
           {(() => {
-            const next = schedule[stepIdx + 1];
-            if (!next || next.type === "done") return null;
-            let label = "";
-            if (["work","warmup","cooldown"].includes(next.type)) label = next.name;
-            else if (next.type === "rest") label = `休憩 ${next.duration}秒`;
-            else if (next.type === "countdown") label = next.label;
-            return label ? <div style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", marginBottom: 8 }}>次: {label}</div> : null;
+            let i = stepIdx + 1;
+            while (i < schedule.length) {
+              const s = schedule[i];
+              if (!s || s.type === "done") return null;
+              if (["work","warmup","cooldown"].includes(s.type)) {
+                return <div style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", marginBottom: 8 }}>次の種目: {s.name}</div>;
+              }
+              i++;
+            }
+            return null;
           })()}
 
           {/* Guide toggle — 全種目常に表示、閉じるボタンあり */}
