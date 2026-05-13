@@ -1,4 +1,4 @@
-import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, EVENING_DAY } from "../data/weekRotations.js";
+import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, EVENING_DAY, STRETCHING_DAY, YOGA_DAY } from "../data/weekRotations.js";
 import { STORAGE_KEY } from "./storage.js";
 
 // 最初の記録日を起点に4週サイクル（記録なしは Week A）
@@ -19,9 +19,11 @@ export function getWeekIndex() {
 export function buildSchedule(dayKey, weekIdx) {
   const wi = weekIdx !== undefined ? weekIdx : getWeekIndex();
   const weekData = WEEK_ROTATIONS[wi];
-  const day = dayKey === "easy" ? EASY_DAY
-    : dayKey === "morning" ? MORNING_DAY
-    : dayKey === "evening" ? EVENING_DAY
+  const day = dayKey === "easy"       ? EASY_DAY
+    : dayKey === "morning"    ? MORNING_DAY
+    : dayKey === "evening"    ? EVENING_DAY
+    : dayKey === "stretching" ? STRETCHING_DAY
+    : dayKey === "yoga"       ? YOGA_DAY
     : { ...weekData[dayKey], sets: weekData.sets };
   const { exercises, warmup, cooldown, sets } = day;
   const steps = [];
@@ -29,9 +31,9 @@ export function buildSchedule(dayKey, weekIdx) {
   // WARM-UP
   if (warmup && warmup.length > 0) {
     steps.push({ type: "countdown", label: "🔥 ウォームアップ", duration: 3, color: "#F0A500" });
-    warmup.forEach(ex => {
+    warmup.forEach((ex, i) => {
       steps.push({ type: "warmup", name: ex.name, reps: ex.reps, duration: ex.duration, rest: ex.rest });
-      if (ex.rest > 0) steps.push({ type: "rest", duration: ex.rest, label: "次の準備", nextName: null, mini: true });
+      if (ex.rest > 0) steps.push({ type: "rest", duration: ex.rest, label: "次の準備", nextName: warmup[i + 1]?.name || null, mini: true });
     });
   }
 

@@ -149,6 +149,23 @@ export const STRETCHING_DAY = {
   ],
 };
 
+export const YOGA_DAY = {
+  label: "寝たまんまヨガ", theme: "緊張→解放", emoji: "🧘‍♀️", color: "#B39DDB", sets: 1,
+  mainLabel: "🧘‍♀️ 寝たまんまヨガ",
+  warmup: [], cooldown: [],
+  exercises: [
+    { name: "足首ギュッと→ゆるめる",      reps: "5秒ギュッと→10秒ゆるめる",       duration: 25, rest: 5 },
+    { name: "ふくらはぎギュッと→ゆるめる", reps: "5秒ギュッと→10秒ゆるめる",       duration: 25, rest: 5 },
+    { name: "太ももギュッと→ゆるめる",    reps: "5秒ギュッと→10秒ゆるめる",       duration: 25, rest: 5 },
+    { name: "お腹ギュッと→ゆるめる",      reps: "5秒引き込んで→10秒ゆるめる",     duration: 25, rest: 5 },
+    { name: "手・腕ギュッと→ゆるめる",    reps: "5秒グーで握って→10秒パッと開く", duration: 25, rest: 5 },
+    { name: "肩ギュッと→ストンと落とす",  reps: "5秒すくめて→ストンと下ろす",     duration: 25, rest: 5 },
+    { name: "顔ギュッと→ゆるめる",        reps: "5秒しかめて→10秒ゆるめる",       duration: 25, rest: 5 },
+    { name: "全身ギュッと→全身リリース",  reps: "5秒全力→全部ストンと解放",       duration: 30, rest: 5 },
+    { name: "深呼吸・全身脱力",            reps: "ゆっくり5回呼吸",                 duration: 60, rest: 0 },
+  ],
+};
+
 export const EVENING_DAY = {
   label: "夜ストレッチ", theme: "寝る前リラックス", emoji: "🌙", color: "#8B7FD4", sets: 1,
   mainLabel: "🌙 夜のストレッチ",
