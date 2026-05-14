@@ -311,11 +311,16 @@ export default function WorkoutTimer() {
         <div className="pop-in" style={{ width: "100%", maxWidth: 390, background: "rgba(255,255,255,0.06)", border: `1px solid ${activeColor}44`, borderRadius: 26, padding: "22px 18px", backdropFilter: "blur(12px)", marginBottom: 12, textAlign: "center", transition: "border-color 0.4s" }}>
 
           {/* Phase bar */}
-          <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 12 }}>
-            {[["warmup","🔥 ウォーム","#F0A500"], ["main","💪 メイン", dayInfo?.color || "#4ECDC4"], ["cooldown","🧊 クール","#5DADE2"]].map(([p, label, col]) => (
-              <div key={p} style={{ fontSize: 10, padding: "3px 10px", borderRadius: 99, background: currentPhase === p ? `${col}33` : "rgba(255,255,255,0.06)", border: `1px solid ${currentPhase === p ? col : "rgba(255,255,255,0.1)"}`, color: currentPhase === p ? col : "rgba(255,255,255,0.35)", fontWeight: 700 }}>{label}</div>
-            ))}
-          </div>
+          {(() => {
+            const dc = dayInfo?.color || "#4ECDC4";
+            return (
+              <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 12 }}>
+                {[["warmup","🔥 ウォーム"], ["main","💪 メイン"], ["cooldown","🧊 クール"]].map(([p, label]) => (
+                  <div key={p} style={{ fontSize: 10, padding: "3px 10px", borderRadius: 99, background: currentPhase === p ? `${dc}33` : "rgba(255,255,255,0.06)", border: `1px solid ${currentPhase === p ? dc : "rgba(255,255,255,0.1)"}`, color: currentPhase === p ? dc : "rgba(255,255,255,0.35)", fontWeight: 700 }}>{label}</div>
+                ))}
+              </div>
+            );
+          })()}
 
           {/* Badge */}
           <div style={{ display: "inline-block", background: `${activeColor}28`, border: `1px solid ${activeColor}88`, borderRadius: 999, padding: "3px 14px", fontSize: 11, fontWeight: 700, marginBottom: 10, color: activeColor }}>
