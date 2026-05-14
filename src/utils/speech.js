@@ -145,9 +145,14 @@ export function stepSpeech(ns) {
   } else if (ns.type === "cooldown") {
     speak(`${ns.name}、スタート`);
   } else if (ns.type === "rest") {
-    if (ns.nextName) speak(`よく頑張っただっちゃ！次は${ns.nextName}`);
-    else if (ns.label && ns.label.includes("セット")) speak("よく頑張っただっちゃ！少し休憩");
-    else speak("よく頑張っただっちゃ！");
+    if (ns.mini) {
+      if (ns.nextName) speak(`次は${ns.nextName}`);
+      else speak("次の準備だっちゃ！");
+    } else if (ns.label && ns.label.includes("セット")) {
+      speak("よく頑張っただっちゃ！セット完了！休憩だっちゃ！");
+    } else {
+      speak("よく頑張っただっちゃ！休憩だっちゃ！");
+    }
   } else if (ns.type === "done") {
     if (!ns.yogaMode) speak("お疲れさまだっちゃ！全部完了！最高だっちゃ！");
   } else if (ns.type === "countdown") {

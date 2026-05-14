@@ -106,6 +106,7 @@ export default function WorkoutTimer() {
     const cs = currentStepRef.current;
     if (t === 11 && !cs?.yogaScript) speak("あと10秒！");
     if ((t === 3 || t === 2 || t === 1) && !cs?.yogaScript) playBeep("last3");
+    if (t === 5 && cs?.type === "rest" && !cs?.mini && cs?.nextName) speak(`次は${cs.nextName}！準備してだっちゃ！`);
     // 左右がある種目は中間地点で「左右交代」を読み上げる
     if (cs?.reps?.includes("左右") && cs.duration > 6 && t === Math.ceil((cs.duration || 0) / 2)) {
       speak("左右交代");
