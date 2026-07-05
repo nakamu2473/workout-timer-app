@@ -1,11 +1,11 @@
 export const STORAGE_KEY = "ram_workout_v4";
 
 export function loadHistory() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch (e) { return []; }
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
 }
 
 export function saveHistory(h) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(h.slice(-60))); } catch (e) { /* ignore */ }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(h.slice(-60))); } catch { /* ignore */ }
 }
 
 export function formatDate(iso) {

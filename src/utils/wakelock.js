@@ -4,9 +4,12 @@ let shouldLock = false;
 export async function requestWakeLock() {
   if (!("wakeLock" in navigator)) return;
   shouldLock = true;
+  if (wakeLock) return;
   try {
     wakeLock = await navigator.wakeLock.request("screen");
-  } catch (_) {}
+    // タブ切替等でブラウザが自動解放したら再取得できるように追跡を外す
+    wakeLock.addEventListener("release", () => { wakeLock = null; });
+  } catch { /* ignore */ }
 }
 
 export function releaseWakeLock() {

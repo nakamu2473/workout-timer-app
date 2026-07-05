@@ -1,3 +1,5 @@
+import { vi } from 'vitest';
+
 import '@testing-library/jest-dom';
 
 // localStorage mock
@@ -39,7 +41,7 @@ class MockAudioContext {
       },
     };
   }
-  createBuffer(ch, size, rate) { return {}; }
+  createBuffer() { return {}; }
   createBufferSource() {
     return { buffer: null, loop: false, connect: vi.fn(), start: vi.fn() };
   }

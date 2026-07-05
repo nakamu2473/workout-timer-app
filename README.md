@@ -1,17 +1,24 @@
-# React + Vite
+# ラムの筋トレ 💪
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+ラムちゃんが音声で励ましてくれる、自宅トレーニング用ワークアウトタイマー(React + Vite)。
 
-Currently, two official plugins are available:
+## 機能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **4週ローテーションの筋トレメニュー**(Week A〜D × 下半身/上半身/体幹の3日構成、週ごとに強度が上がる)
+- **特別メニュー**: 5分かんたんメニュー、朝ストレッチ、夜ストレッチ、全身ストレッチ(25分)、寝たまんまヨガ(音声誘導つき漸進的筋弛緩法)
+- **音声ガイド**: ブラウザTTSまたは[VOICEVOX](https://voicevox.hiroshiba.jp/)(ずんだもん)による種目読み上げ・残り時間・休憩アナウンス
+- **種目ガイド**: 各種目のやり方とコツをカード表示
+- **記録**: 実施履歴をlocalStorageに保存、週ごとの実施回数を表示
+- **スリープ防止**: ワークアウト中はWake Lock APIで画面を点灯維持
 
-## React Compiler
+## 開発
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+npm run dev      # 開発サーバー起動
+npm test         # テスト実行 (vitest)
+npm run lint     # ESLint
+npm run build    # 本番ビルド
+```
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-# workout-timer-app
+VOICEVOX音声を使う場合は、ローカルで VOICEVOX エンジン(`localhost:50021`)を起動してから設定画面で有効化してください。未起動の場合は自動でブラウザTTSにフォールバックします。
