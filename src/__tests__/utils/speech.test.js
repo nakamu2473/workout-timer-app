@@ -93,11 +93,18 @@ describe('stepSpeech', () => {
     expect(utterance.text).toContain('スタート');
   });
 
-  it('announces rest step with nextName when provided', () => {
-    stepSpeech({ type: 'rest', nextName: 'ランジ' });
+  it('announces short rest step with nextName at entry', () => {
+    stepSpeech({ type: 'rest', nextName: 'ランジ', duration: 5 });
     const utterance = lastSpokenUtterance();
     expect(utterance.text).toContain('ランジ');
     expect(utterance.text).toContain('次は');
+  });
+
+  it('announces long rest step generically (nextName is spoken by the 5-sec notice instead)', () => {
+    stepSpeech({ type: 'rest', nextName: 'ランジ', duration: 30 });
+    const utterance = lastSpokenUtterance();
+    expect(utterance.text).toContain('休憩だっちゃ');
+    expect(utterance.text).not.toContain('ランジ');
   });
 
   it('announces rest step with set completion message when label includes セット', () => {
