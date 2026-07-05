@@ -1,11 +1,5 @@
-import { WEEK_ROTATIONS, EASY_DAY } from "../data/weekRotations.js";
-import { getWeekIndex } from "../utils/schedule.js";
-
-export default function HealthGuide({ dayKey, onClose }) {
-  const wi = getWeekIndex();
-  const weekData = WEEK_ROTATIONS[wi];
-  const day = dayKey === "easy" ? EASY_DAY : weekData[dayKey];
-  const color = day.color || "#82E0AA";
+export default function HealthGuide({ color: colorProp, onClose }) {
+  const color = colorProp || "#82E0AA";
   const steps = ["iPhoneの「ヘルスケア」アプリを開くっちゃ","右下「ブラウズ」→「アクティビティ」→「ワークアウト」をタップだっちゃ","右上の「＋」ボタンを押すっちゃ！","「機能的筋力トレーニング」を選ぶっちゃ","時間を入力して日時を今日に合わせるっちゃ","「追加」を押したら完了だっちゃ！"];
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 100, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>

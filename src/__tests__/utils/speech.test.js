@@ -6,8 +6,8 @@ vi.mock('../../utils/voicevox.js', () => ({
   cancelVoicevox: vi.fn(),
 }));
 
-import { speak, stepSpeech, setSelectedVoice, setUseVoicevox, getUseVoicevox } from '../../utils/speech.js';
-import { speakVoicevox, cancelVoicevox } from '../../utils/voicevox.js';
+import { speak, stepSpeech, setUseVoicevox, getUseVoicevox } from '../../utils/speech.js';
+import { speakVoicevox } from '../../utils/voicevox.js';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -50,9 +50,18 @@ describe('speak (VOICEVOX mode)', () => {
   beforeEach(() => setUseVoicevox(true));
 
   it('calls speakVoicevox instead of browser TTS', () => {
+    speakVoicevox.mockResolvedValue(true);
     speak('ずんだもん');
-    expect(speakVoicevox).toHaveBeenCalledWith('ずんだもん');
+    expect(speakVoicevox).toHaveBeenCalledWith('ずんだもん', 1.1);
     expect(globalThis.speechSynthesis.speak).not.toHaveBeenCalled();
+  });
+
+  it('falls back to browser TTS when VOICEVOX fails (engine unreachable)', async () => {
+    speakVoicevox.mockResolvedValue(false);
+    speak('ずんだもん');
+    await Promise.resolve(); // フォールバック判定のマイクロタスクを消化
+    expect(globalThis.speechSynthesis.speak).toHaveBeenCalledTimes(1);
+    expect(lastSpokenUtterance().text).toBe('ずんだもん');
   });
 });
 
@@ -148,6 +157,7 @@ describe('stepSpeech', () => {
 
   it('sends script steps to VOICEVOX with a slow speed when in voicevox mode', () => {
     setUseVoicevox(true);
+    speakVoicevox.mockResolvedValue(true);
     stepSpeech({ type: 'work', name: '太もも', silent: true, script: '力を入れて。ゆっくり抜いて。' });
     expect(speakVoicevox).toHaveBeenCalledTimes(1);
     expect(speakVoicevox).toHaveBeenCalledWith('力を入れて。ゆっくり抜いて。', 0.9);

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { buildSchedule, getWeekIndex } from '../../utils/schedule.js';
 import { STORAGE_KEY } from '../../utils/storage.js';
 import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, EVENING_DAY } from '../../data/weekRotations.js';

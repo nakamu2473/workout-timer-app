@@ -85,7 +85,7 @@ export function unlockAudio() {
     } else {
       ctx.resume().then(() => startKeepAlive(ctx)).catch(() => {});
     }
-  } catch (e) { /* ignore */ }
+  } catch { /* ignore */ }
 }
 
 // バックグラウンドから復帰したときに再開する

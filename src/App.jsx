@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 import { EXERCISE_GUIDE } from "./data/exerciseGuide.js";
-import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, EVENING_DAY, STRETCHING_DAY, YOGA_DAY } from "./data/weekRotations.js";
+import { WEEK_ROTATIONS } from "./data/weekRotations.js";
 import { getRamMsg } from "./data/ramMessages.js";
 
-import { getWeekIndex, buildSchedule } from "./utils/schedule.js";
+import { getWeekIndex, buildSchedule, getDayInfo as resolveDayInfo } from "./utils/schedule.js";
 import { playBeep, unlockAudio } from "./utils/audio.js";
 import { speak, stepSpeech, cancelSpeech } from "./utils/speech.js";
 import { loadHistory, saveHistory } from "./utils/storage.js";
@@ -15,6 +15,28 @@ import VoiceSelector from "./components/VoiceSelector.jsx";
 import GuideCard from "./components/GuideCard.jsx";
 import HealthGuide from "./components/HealthGuide.jsx";
 import HistoryPanel from "./components/HistoryPanel.jsx";
+
+const WEEK_MS = 7 * 24 * 3600 * 1000;
+// モジュール読み込み時の時刻（レンダー中に Date.now() を呼ばないための基準値）
+const INITIAL_NOW = Date.now();
+
+// 手動で選んだ週を起点に、経過週ぶん自動で進めた現在の週インデックスを返す。
+// 保存値が無い・壊れているときは記録履歴から算出する
+function loadInitialWeekIdx() {
+  try {
+    const raw = localStorage.getItem("ram_week_idx");
+    if (raw !== null) {
+      const saved = Number(raw);
+      if (Number.isInteger(saved) && saved >= 0 && saved <= 3) {
+        const setAt = Date.parse(localStorage.getItem("ram_week_set_at") || "");
+        const elapsed = Number.isNaN(setAt) ? 0 : Math.max(0, Math.floor((INITIAL_NOW - setAt) / WEEK_MS));
+        return (saved + elapsed) % 4;
+      }
+    }
+  } catch { /* ignore */ }
+  return getWeekIndex();
+}
+const INITIAL_WEEK_IDX = loadInitialWeekIdx();
 
 export default function WorkoutTimer() {
   const [selectedDay, setSelectedDay] = useState(null);
@@ -27,19 +49,17 @@ export default function WorkoutTimer() {
   const [showHealthGuide, setShowHealthGuide] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState(loadHistory);
-  const [guidePopup, setGuidePopup] = useState(null);
   const [openGuideIdx, setOpenGuideIdx] = useState(null);
   const [showVoiceSelector, setShowVoiceSelector] = useState(false);
   const intervalRef = useRef(null);
   const startTimeRef = useRef(null);
+  const pauseStartRef = useRef(null);
+  const pausedMsRef = useRef(0);
   const prevTimeRef = useRef(null);
   const timeLeftRef = useRef(0);
   const currentStepRef = useRef(null);
 
-  const [weekIdx, setWeekIdx] = useState(() => {
-    const saved = localStorage.getItem("ram_week_idx");
-    return saved !== null ? Number(saved) : getWeekIndex();
-  });
+  const [weekIdx, setWeekIdx] = useState(INITIAL_WEEK_IDX);
   const wi = weekIdx;
   const weekData = WEEK_ROTATIONS[wi];
 
@@ -47,25 +67,22 @@ export default function WorkoutTimer() {
     const newWi = ((weekIdx + delta) % 4 + 4) % 4;
     setWeekIdx(newWi);
     localStorage.setItem("ram_week_idx", String(newWi));
+    // 選択日を起点に4週ローテーションを自動で進められるよう記録する
+    localStorage.setItem("ram_week_set_at", new Date().toISOString());
     setSelectedDay(null);
     setSchedule([]);
     setRunning(false);
   };
   const currentStep = schedule[stepIdx] || null;
 
-  const getDayInfo = useCallback((key) => {
-    if (key === "easy") return EASY_DAY;
-    if (key === "morning") return MORNING_DAY;
-    if (key === "evening") return EVENING_DAY;
-    if (key === "stretching") return STRETCHING_DAY;
-    if (key === "yoga") return YOGA_DAY;
-    return { ...weekData[key], sets: weekData.sets };
-  }, [weekData]);
+  const getDayInfo = useCallback((key) => resolveDayInfo(key, weekIdx), [weekIdx]);
 
   const dayInfo = selectedDay ? getDayInfo(selectedDay) : null;
 
   const handleFinish = useCallback((dayKey) => {
-    const elapsed = startTimeRef.current ? Math.round((Date.now() - startTimeRef.current) / 60000) : 10;
+    // 一時停止していた時間は運動時間に含めない
+    const activeMs = startTimeRef.current ? Date.now() - startTimeRef.current - pausedMsRef.current : 0;
+    const elapsed = startTimeRef.current ? Math.round(activeMs / 60000) : 10;
     const entry = { dayKey, date: new Date().toISOString(), mins: Math.max(1, elapsed), week: weekData.label };
     const newH = [...loadHistory(), entry];
     saveHistory(newH); setHistory(newH);
@@ -81,6 +98,8 @@ export default function WorkoutTimer() {
     setShowGuide(["warmup","cooldown"].includes(s[0].type));
     setRamMsg("準備できたらスタートだっちゃ！");
     startTimeRef.current = null;
+    pauseStartRef.current = null;
+    pausedMsRef.current = 0;
   }, [weekIdx]);
 
   const advanceToStep = useCallback((nextIdx, beepType) => {
@@ -93,7 +112,7 @@ export default function WorkoutTimer() {
       if (["warmup","cooldown","work"].includes(ns.type)) setShowGuide(true);
       else if (ns.type === "rest" || ns.type === "countdown") setShowGuide(false);
       if (ns.type === "done") { setRunning(false); releaseWakeLock(); handleFinish(selectedDay); if (!ns.silent) playBeep("done"); }
-      if (!ns.silent) playBeep(beepType);
+      else if (!ns.silent) playBeep(beepType);
       stepSpeech(ns);
     } else {
       setRunning(false);
@@ -108,9 +127,9 @@ export default function WorkoutTimer() {
     if (t === 11 && !cs?.silent) speak("あと10秒！");
     if ((t === 3 || t === 2 || t === 1) && !cs?.silent) playBeep("last3");
     // 5秒前の次種目通知は、入りのアナウンスと重ならない長さの休憩だけ（短い休憩は入りで告知済み）
-    if (t === 5 && cs?.type === "rest" && !cs?.mini && cs?.nextName && (cs.duration || 0) >= 10) speak(`次は${cs.nextName}！準備してだっちゃ！`);
+    if (t === 5 && cs?.type === "rest" && !cs?.mini && cs?.nextName && !cs?.silent && (cs.duration || 0) >= 10) speak(`次は${cs.nextName}！準備してだっちゃ！`);
     // 左右がある種目は中間地点で「左右交代」を読み上げる
-    if (cs?.reps?.includes("左右") && cs.duration > 6 && t === Math.ceil((cs.duration || 0) / 2)) {
+    if (cs?.reps?.includes("左右") && !cs?.silent && cs.duration > 6 && t === Math.ceil((cs.duration || 0) / 2)) {
       speak("左右交代");
     }
     setTimeLeft(prev => {
@@ -128,6 +147,8 @@ export default function WorkoutTimer() {
     currentStepRef.current = currentStep;
     if (pendingAdvanceRef.current) {
       pendingAdvanceRef.current = false;
+      // tick(setInterval)からは最新のstepIdxが見えないため、レンダー後にここで遷移する設計
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       advanceToStep(stepIdx + 1, "start");
     }
   });
@@ -142,12 +163,23 @@ export default function WorkoutTimer() {
     return () => clearInterval(intervalRef.current);
   }, [running, tick]);
 
+  // 「今週」カウント用の現在時刻。レンダー中に Date.now() を呼ばず、1分ごとに更新する
+  const [now, setNow] = useState(INITIAL_NOW);
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(id);
+  }, []);
+
   const handleStartPause = () => {
     if (currentStep?.type === "done") return;
     unlockAudio();
     if (!running) {
       const isFirstStart = !startTimeRef.current;
       if (isFirstStart) startTimeRef.current = Date.now();
+      if (pauseStartRef.current) {
+        pausedMsRef.current += Date.now() - pauseStartRef.current;
+        pauseStartRef.current = null;
+      }
       setRamMsg(getRamMsg(currentStep?.type || "work"));
       if (["warmup","cooldown","work"].includes(currentStep?.type)) setShowGuide(true);
       else if (currentStep?.type === "rest" || currentStep?.type === "countdown") setShowGuide(false);
@@ -157,6 +189,7 @@ export default function WorkoutTimer() {
     } else {
       // 一時停止時は読み上げ中の音声（ヨガの長文ナレーション等）を止める
       cancelSpeech();
+      pauseStartRef.current = Date.now();
     }
     setRunning(r => !r);
   };
@@ -183,12 +216,15 @@ export default function WorkoutTimer() {
   const cooldownCurrent = currentStep?.type === "cooldown"
     ? cooldownSteps.findIndex(s => schedule.indexOf(s) === stepIdx) + 1 : 0;
 
-  const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000);
-  const weekCount = history.filter(h => new Date(h.date) >= weekAgo && !["morning","evening","stretching","yoga"].includes(h.dayKey)).length;
-  const stretchCount = history.filter(h => new Date(h.date) >= weekAgo && h.dayKey === "morning").length;
-  const eveningCount = history.filter(h => new Date(h.date) >= weekAgo && h.dayKey === "evening").length;
-  const deepStretchCount = history.filter(h => new Date(h.date) >= weekAgo && h.dayKey === "stretching").length;
-  const yogaCount = history.filter(h => new Date(h.date) >= weekAgo && h.dayKey === "yoga").length;
+  // 「今週」は月曜0時起点の暦週で数える
+  const weekStart = new Date(now);
+  weekStart.setHours(0, 0, 0, 0);
+  weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 6) % 7);
+  const weekCount = history.filter(h => new Date(h.date) >= weekStart && !["morning","evening","stretching","yoga"].includes(h.dayKey)).length;
+  const stretchCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "morning").length;
+  const eveningCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "evening").length;
+  const deepStretchCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "stretching").length;
+  const yogaCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "yoga").length;
 
   const DAY_KEYS = ["day1", "day2", "day3", "easy", "morning", "evening", "stretching", "yoga"];
 
@@ -355,7 +391,7 @@ export default function WorkoutTimer() {
 
           {/* Guide toggle — 全種目常に表示、閉じるボタンあり */}
           {/* Guide card */}
-          {["work","warmup","cooldown"].includes(currentStep.type) && (
+          {["work","warmup","cooldown"].includes(currentStep.type) && EXERCISE_GUIDE[currentStep.name] && (
             <div className="slide-down">
               <GuideCard name={currentStep.name} color={activeColor} />
               <button className="btn" onClick={() => setShowGuide(g => !g)} style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 9, padding: "4px 12px", color: "rgba(255,255,255,0.45)", fontSize: 11, fontWeight: 700, fontFamily: "inherit", marginBottom: 6, display: showGuide ? "inline-block" : "none" }}>
@@ -514,7 +550,7 @@ export default function WorkoutTimer() {
 
       <div style={{ marginTop: 24, fontSize: 10, color: "rgba(255,255,255,0.15)", textAlign: "center" }}>ナイル川のほとりから ✦ ラム</div>
 
-      {showHealthGuide && selectedDay && <HealthGuide dayKey={selectedDay} onClose={() => setShowHealthGuide(false)} />}
+      {showHealthGuide && selectedDay && <HealthGuide color={dayInfo?.color} onClose={() => setShowHealthGuide(false)} />}
       {showHistory && <HistoryPanel history={history} onClose={() => setShowHistory(false)} onDelete={handleDeleteHistory} />}
       {showVoiceSelector && <VoiceSelector onClose={() => setShowVoiceSelector(false)} />}
     </div>

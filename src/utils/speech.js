@@ -1,7 +1,8 @@
 import { speakVoicevox, cancelVoicevox } from "./voicevox.js";
 
 let _selectedVoice = null;
-let _useVoicevox = localStorage.getItem("ram_voice_mode") === "voicevox";
+let _useVoicevox = false;
+try { _useVoicevox = localStorage.getItem("ram_voice_mode") === "voicevox"; } catch { /* storage無効環境では常にブラウザTTS */ }
 
 export function getSelectedVoice() { return _selectedVoice; }
 export function setSelectedVoice(v) {
@@ -18,7 +19,8 @@ export function setUseVoicevox(enabled) {
 
 // 再生中の音声（ブラウザTTS・VOICEVOX両方）を止める
 export function cancelSpeech() {
-  try { window.speechSynthesis?.cancel(); } catch (e) { /* ignore */ }
+  _speakSeq++;
+  try { window.speechSynthesis?.cancel(); } catch { /* ignore */ }
   cancelVoicevox();
 }
 
@@ -34,30 +36,48 @@ function speakUtterance(text, { rate = 1.05, pitch = 1.1, voice = null, enqueue 
     const v = voice || _selectedVoice;
     if (v) u.voice = v;
     window.speechSynthesis.speak(u);
-  } catch (e) { /* ignore */ }
+  } catch { /* ignore */ }
+}
+
+// VOICEVOXが失敗したとき（エンジン未起動・デプロイ先から到達不能など）に
+// ブラウザTTSへフォールバックするための世代番号。後発の発話が始まっていたら何もしない
+let _speakSeq = 0;
+
+function speakViaVoicevox(text, speedScale, fallback) {
+  const seq = ++_speakSeq;
+  try { window.speechSynthesis?.cancel(); } catch { /* ignore */ }
+  Promise.resolve(speakVoicevox(text, speedScale)).then(ok => {
+    if (!ok && seq === _speakSeq) fallback();
+  });
 }
 
 export function speak(text, voice) {
   if (_useVoicevox) {
-    try { window.speechSynthesis?.cancel(); } catch (e) { /* ignore */ }
-    speakVoicevox(text);
+    speakViaVoicevox(text, 1.1, () => speakUtterance(text, { voice }));
     return;
   }
+  _speakSeq++;
   cancelVoicevox();
   speakUtterance(text, { voice });
+}
+
+// 文単位に分割する（Safari 16.3以前が未対応の後読み正規表現は使わない）
+function splitSentences(text) {
+  return (text.match(/[^。！？]+[。！？]*/g) || [text]).filter(s => s.trim());
 }
 
 // 長い誘導ナレーションをゆっくり読み上げる。
 // Chromeは1つの長い発話を約15秒で無音のまま打ち切るため、文単位に分割してキューに積む
 function speakScript(text) {
+  const speakSlowChunks = () =>
+    splitSentences(text).forEach((s, i) => speakUtterance(s, { rate: 0.85, pitch: 1.0, enqueue: i > 0 }));
   if (_useVoicevox) {
-    try { window.speechSynthesis?.cancel(); } catch (e) { /* ignore */ }
-    speakVoicevox(text, 0.9);
+    speakViaVoicevox(text, 0.9, speakSlowChunks);
     return;
   }
+  _speakSeq++;
   cancelVoicevox();
-  const sentences = text.split(/(?<=[。！？])/).filter(s => s.trim());
-  sentences.forEach((s, i) => speakUtterance(s, { rate: 0.85, pitch: 1.0, enqueue: i > 0 }));
+  speakSlowChunks();
 }
 
 export function stepSpeech(ns) {

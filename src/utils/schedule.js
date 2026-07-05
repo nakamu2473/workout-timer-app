@@ -11,20 +11,28 @@ export function getWeekIndex() {
     );
     const diffDays = Math.floor((new Date() - firstDate) / (24 * 3600 * 1000));
     return ((Math.floor(diffDays / 7) % 4) + 4) % 4;
-  } catch (e) {
+  } catch {
     return 0;
   }
 }
 
-export function buildSchedule(dayKey, weekIdx) {
+// dayKey からメニュー定義を解決する（特別日 or 週ローテーションの day1-3）。
+// 未知のキーは null を返すので、呼び出し側でフォールバックすること
+export function getDayInfo(dayKey, weekIdx) {
+  if (dayKey === "easy") return EASY_DAY;
+  if (dayKey === "morning") return MORNING_DAY;
+  if (dayKey === "evening") return EVENING_DAY;
+  if (dayKey === "stretching") return STRETCHING_DAY;
+  if (dayKey === "yoga") return YOGA_DAY;
   const wi = weekIdx !== undefined ? weekIdx : getWeekIndex();
   const weekData = WEEK_ROTATIONS[wi];
-  const day = dayKey === "easy"       ? EASY_DAY
-    : dayKey === "morning"    ? MORNING_DAY
-    : dayKey === "evening"    ? EVENING_DAY
-    : dayKey === "stretching" ? STRETCHING_DAY
-    : dayKey === "yoga"       ? YOGA_DAY
-    : { ...weekData[dayKey], sets: weekData.sets };
+  const day = weekData?.[dayKey];
+  return day ? { ...day, sets: weekData.sets } : null;
+}
+
+export function buildSchedule(dayKey, weekIdx) {
+  const day = getDayInfo(dayKey, weekIdx);
+  if (!day) return [];
   const { exercises, warmup, cooldown, sets } = day;
   const dayColor = day.color || "#4ECDC4";
   // silent な日（寝たまんまヨガ等）は全ステップでビープ・定型読み上げを抑制する
