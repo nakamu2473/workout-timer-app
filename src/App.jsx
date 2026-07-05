@@ -6,7 +6,7 @@ import { getRamMsg } from "./data/ramMessages.js";
 
 import { getWeekIndex, buildSchedule } from "./utils/schedule.js";
 import { playBeep, unlockAudio } from "./utils/audio.js";
-import { speak, stepSpeech } from "./utils/speech.js";
+import { speak, stepSpeech, cancelSpeech } from "./utils/speech.js";
 import { loadHistory, saveHistory } from "./utils/storage.js";
 import { requestWakeLock, releaseWakeLock } from "./utils/wakelock.js";
 import { phaseColor, phaseBadgeLabel } from "./utils/phase.js";
@@ -73,6 +73,7 @@ export default function WorkoutTimer() {
   }, [weekData]);
 
   const startDay = useCallback((dayKey) => {
+    cancelSpeech();
     const s = buildSchedule(dayKey, weekIdx);
     setSchedule(s); setSelectedDay(dayKey);
     setStepIdx(0); setTimeLeft(s[0].duration);
@@ -91,8 +92,8 @@ export default function WorkoutTimer() {
       setRamMsg(getRamMsg(ns.type));
       if (["warmup","cooldown","work"].includes(ns.type)) setShowGuide(true);
       else if (ns.type === "rest" || ns.type === "countdown") setShowGuide(false);
-      if (ns.type === "done") { setRunning(false); releaseWakeLock(); handleFinish(selectedDay); if (!ns.yogaMode) playBeep("done"); }
-      if (!ns.yogaScript && !ns.yogaMode) playBeep(beepType);
+      if (ns.type === "done") { setRunning(false); releaseWakeLock(); handleFinish(selectedDay); if (!ns.silent) playBeep("done"); }
+      if (!ns.silent) playBeep(beepType);
       stepSpeech(ns);
     } else {
       setRunning(false);
@@ -104,9 +105,10 @@ export default function WorkoutTimer() {
   const tick = useCallback(() => {
     const t = timeLeftRef.current;
     const cs = currentStepRef.current;
-    if (t === 11 && !cs?.yogaScript) speak("あと10秒！");
-    if ((t === 3 || t === 2 || t === 1) && !cs?.yogaScript) playBeep("last3");
-    if (t === 5 && cs?.type === "rest" && !cs?.mini && cs?.nextName) speak(`次は${cs.nextName}！準備してだっちゃ！`);
+    if (t === 11 && !cs?.silent) speak("あと10秒！");
+    if ((t === 3 || t === 2 || t === 1) && !cs?.silent) playBeep("last3");
+    // 5秒前の次種目通知は、入りのアナウンスと重ならない長さの休憩だけ（短い休憩は入りで告知済み）
+    if (t === 5 && cs?.type === "rest" && !cs?.mini && cs?.nextName && (cs.duration || 0) >= 10) speak(`次は${cs.nextName}！準備してだっちゃ！`);
     // 左右がある種目は中間地点で「左右交代」を読み上げる
     if (cs?.reps?.includes("左右") && cs.duration > 6 && t === Math.ceil((cs.duration || 0) / 2)) {
       speak("左右交代");
@@ -149,9 +151,12 @@ export default function WorkoutTimer() {
       setRamMsg(getRamMsg(currentStep?.type || "work"));
       if (["warmup","cooldown","work"].includes(currentStep?.type)) setShowGuide(true);
       else if (currentStep?.type === "rest" || currentStep?.type === "countdown") setShowGuide(false);
-      if (!currentStep?.yogaMode && !currentStep?.yogaScript) playBeep("start");
+      if (!currentStep?.silent) playBeep("start");
       // 一時停止からの再開時は読み上げない、初回スタート時だけ
       if (isFirstStart) stepSpeech(currentStep);
+    } else {
+      // 一時停止時は読み上げ中の音声（ヨガの長文ナレーション等）を止める
+      cancelSpeech();
     }
     setRunning(r => !r);
   };
@@ -161,7 +166,8 @@ export default function WorkoutTimer() {
     saveHistory(newH); setHistory(newH);
   };
 
-  const activeColor = phaseColor(currentStep, dayInfo?.color || "#4ECDC4");
+  const dayColor = dayInfo?.color || "#4ECDC4";
+  const activeColor = phaseColor(currentStep, dayColor);
   const progress = currentStep && currentStep.duration > 0
     ? ((currentStep.duration - timeLeft) / currentStep.duration) * 100
     : currentStep?.type === "done" ? 100 : 0;
@@ -311,16 +317,11 @@ export default function WorkoutTimer() {
         <div className="pop-in" style={{ width: "100%", maxWidth: 390, background: "rgba(255,255,255,0.06)", border: `1px solid ${activeColor}44`, borderRadius: 26, padding: "22px 18px", backdropFilter: "blur(12px)", marginBottom: 12, textAlign: "center", transition: "border-color 0.4s" }}>
 
           {/* Phase bar */}
-          {(() => {
-            const dc = dayInfo?.color || "#4ECDC4";
-            return (
-              <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 12 }}>
-                {[["warmup","🔥 ウォーム"], ["main","💪 メイン"], ["cooldown","🧊 クール"]].map(([p, label]) => (
-                  <div key={p} style={{ fontSize: 10, padding: "3px 10px", borderRadius: 99, background: currentPhase === p ? `${dc}33` : "rgba(255,255,255,0.06)", border: `1px solid ${currentPhase === p ? dc : "rgba(255,255,255,0.1)"}`, color: currentPhase === p ? dc : "rgba(255,255,255,0.35)", fontWeight: 700 }}>{label}</div>
-                ))}
-              </div>
-            );
-          })()}
+          <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 12 }}>
+            {[["warmup","🔥 ウォーム"], ["main","💪 メイン"], ["cooldown","🧊 クール"]].map(([p, label]) => (
+              <div key={p} style={{ fontSize: 10, padding: "3px 10px", borderRadius: 99, background: currentPhase === p ? `${dayColor}33` : "rgba(255,255,255,0.06)", border: `1px solid ${currentPhase === p ? dayColor : "rgba(255,255,255,0.1)"}`, color: currentPhase === p ? dayColor : "rgba(255,255,255,0.35)", fontWeight: 700 }}>{label}</div>
+            ))}
+          </div>
 
           {/* Badge */}
           <div style={{ display: "inline-block", background: `${activeColor}28`, border: `1px solid ${activeColor}88`, borderRadius: 999, padding: "3px 14px", fontSize: 11, fontWeight: 700, marginBottom: 10, color: activeColor }}>
@@ -386,7 +387,7 @@ export default function WorkoutTimer() {
 
           {/* Overall progress */}
           <div style={{ height: 5, background: "rgba(255,255,255,0.08)", borderRadius: 99, overflow: "hidden", marginBottom: 5, position: "relative" }}>
-            <div className="progress-bar-shine" style={{ height: "100%", width: `${totalWork > 0 ? (completedWork / totalWork) * 100 : 0}%`, background: `linear-gradient(90deg, ${dayInfo?.color || "#4ECDC4"}88, ${dayInfo?.color || "#4ECDC4"})`, borderRadius: 99, transition: "width 0.4s ease", position: "relative", overflow: "hidden" }} />
+            <div className="progress-bar-shine" style={{ height: "100%", width: `${totalWork > 0 ? (completedWork / totalWork) * 100 : 0}%`, background: `linear-gradient(90deg, ${dayColor}88, ${dayColor})`, borderRadius: 99, transition: "width 0.4s ease", position: "relative", overflow: "hidden" }} />
           </div>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 14 }}>メイン {completedWork}/{totalWork}種目完了</div>
 
@@ -403,7 +404,7 @@ export default function WorkoutTimer() {
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-              <button className="btn" onClick={() => setShowHealthGuide(true)} style={{ background: `linear-gradient(135deg, ${dayInfo?.color || "#4ECDC4"}, ${dayInfo?.color || "#4ECDC4"}bb)`, border: "none", borderRadius: 13, padding: "12px", color: "#000", fontSize: 14, fontWeight: 900, fontFamily: "inherit", width: "100%" }}>📱 ヘルスケアに記録するっちゃ！</button>
+              <button className="btn" onClick={() => setShowHealthGuide(true)} style={{ background: `linear-gradient(135deg, ${dayColor}, ${dayColor}bb)`, border: "none", borderRadius: 13, padding: "12px", color: "#000", fontSize: 14, fontWeight: 900, fontFamily: "inherit", width: "100%" }}>📱 ヘルスケアに記録するっちゃ！</button>
               <button className="btn" onClick={() => setShowHistory(true)} style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 13, padding: "10px", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: "inherit", width: "100%" }}>📋 きろくを見るっちゃ</button>
               <button className="btn" onClick={handleReset} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 13, padding: "9px", color: "rgba(255,255,255,0.45)", fontSize: 12, fontWeight: 700, fontFamily: "inherit", width: "100%" }}>↺ もう一度</button>
             </div>

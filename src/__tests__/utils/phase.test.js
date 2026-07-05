@@ -9,12 +9,12 @@ describe('phaseColor', () => {
     expect(phaseColor(undefined, DAY_COLOR)).toBe(DAY_COLOR);
   });
 
-  it('returns orange for warmup steps', () => {
-    expect(phaseColor({ type: 'warmup' }, DAY_COLOR)).toBe('#F0A500');
+  it('returns dayColor for warmup steps (unified with day color)', () => {
+    expect(phaseColor({ type: 'warmup' }, DAY_COLOR)).toBe(DAY_COLOR);
   });
 
-  it('returns blue for cooldown steps', () => {
-    expect(phaseColor({ type: 'cooldown' }, DAY_COLOR)).toBe('#5DADE2');
+  it('returns dayColor for cooldown steps (unified with day color)', () => {
+    expect(phaseColor({ type: 'cooldown' }, DAY_COLOR)).toBe(DAY_COLOR);
   });
 
   it('returns step.color for countdown steps', () => {

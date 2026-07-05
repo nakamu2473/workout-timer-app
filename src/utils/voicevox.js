@@ -4,10 +4,15 @@ export const ZUNDAMON_ID = 3; // ずんだもん ノーマル
 let _audio = null;
 
 export function cancelVoicevox() {
-  if (_audio) { _audio.pause(); _audio.src = ""; _audio = null; }
+  if (_audio) {
+    _audio.pause();
+    if (_audio.src) URL.revokeObjectURL(_audio.src);
+    _audio.src = "";
+    _audio = null;
+  }
 }
 
-export async function speakVoicevox(text) {
+export async function speakVoicevox(text, speedScale = 1.1) {
   try {
     cancelVoicevox();
     const qRes = await fetch(
@@ -16,7 +21,7 @@ export async function speakVoicevox(text) {
     );
     if (!qRes.ok) return false;
     const query = await qRes.json();
-    query.speedScale = 1.1;
+    query.speedScale = speedScale;
 
     const sRes = await fetch(
       `${BASE}/synthesis?speaker=${ZUNDAMON_ID}`,

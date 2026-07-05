@@ -93,11 +93,18 @@ describe('stepSpeech', () => {
     expect(utterance.text).toContain('スタート');
   });
 
-  it('announces rest step with nextName when provided', () => {
-    stepSpeech({ type: 'rest', nextName: 'ランジ' });
+  it('announces short rest step with nextName at entry', () => {
+    stepSpeech({ type: 'rest', nextName: 'ランジ', duration: 5 });
     const utterance = lastSpokenUtterance();
     expect(utterance.text).toContain('ランジ');
     expect(utterance.text).toContain('次は');
+  });
+
+  it('announces long rest step generically (nextName is spoken by the 5-sec notice instead)', () => {
+    stepSpeech({ type: 'rest', nextName: 'ランジ', duration: 30 });
+    const utterance = lastSpokenUtterance();
+    expect(utterance.text).toContain('休憩だっちゃ');
+    expect(utterance.text).not.toContain('ランジ');
   });
 
   it('announces rest step with set completion message when label includes セット', () => {
@@ -117,6 +124,34 @@ describe('stepSpeech', () => {
     const utterance = lastSpokenUtterance();
     expect(utterance.text).toContain('お疲れさまだっちゃ');
     expect(utterance.text).toContain('完了');
+  });
+
+  it('speaks nothing for silent steps (sleep yoga)', () => {
+    stepSpeech({ type: 'countdown', label: '🧘‍♀️ 寝たまんまヨガ', silent: true });
+    stepSpeech({ type: 'done', silent: true });
+    expect(globalThis.speechSynthesis.speak).not.toHaveBeenCalled();
+  });
+
+  it('speaks script steps slowly, chunked per sentence to avoid long-utterance cutoff', () => {
+    stepSpeech({ type: 'work', name: '太もも', silent: true, script: '力を入れて。ゆっくり抜いて。おやすみなさい。' });
+    const calls = globalThis.speechSynthesis.speak.mock.calls;
+    expect(calls.length).toBe(3);
+    expect(calls[0][0].text).toBe('力を入れて。');
+    expect(calls[2][0].text).toBe('おやすみなさい。');
+    calls.forEach(([u]) => {
+      expect(u.rate).toBeCloseTo(0.85);
+      expect(u.pitch).toBeCloseTo(1.0);
+    });
+    // 先頭でのみキャンセルし、後続の文はキューに積む
+    expect(globalThis.speechSynthesis.cancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends script steps to VOICEVOX with a slow speed when in voicevox mode', () => {
+    setUseVoicevox(true);
+    stepSpeech({ type: 'work', name: '太もも', silent: true, script: '力を入れて。ゆっくり抜いて。' });
+    expect(speakVoicevox).toHaveBeenCalledTimes(1);
+    expect(speakVoicevox).toHaveBeenCalledWith('力を入れて。ゆっくり抜いて。', 0.9);
+    expect(globalThis.speechSynthesis.speak).not.toHaveBeenCalled();
   });
 
   it('announces warmup countdown', () => {

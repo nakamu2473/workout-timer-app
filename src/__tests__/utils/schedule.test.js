@@ -271,3 +271,25 @@ describe('buildSchedule – rest step nextName', () => {
     });
   });
 });
+
+// ─── buildSchedule – silent day (寝たまんまヨガ) ─────────────────────────────
+
+describe('buildSchedule – yoga (silent day)', () => {
+  const steps = buildSchedule('yoga', 0);
+
+  it('stamps silent on every step', () => {
+    expect(steps.length).toBeGreaterThan(0);
+    steps.forEach(s => expect(s.silent).toBe(true));
+  });
+
+  it('carries the narration script onto work steps', () => {
+    const workSteps = getStepsByType(steps, 'work');
+    expect(workSteps.length).toBeGreaterThan(0);
+    workSteps.forEach(s => expect(typeof s.script).toBe('string'));
+  });
+
+  it('does not stamp silent on normal days', () => {
+    const day1Steps = buildSchedule('day1', 0);
+    day1Steps.forEach(s => expect(s.silent).toBeUndefined());
+  });
+});
