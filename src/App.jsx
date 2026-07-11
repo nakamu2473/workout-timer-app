@@ -51,6 +51,8 @@ export default function WorkoutTimer() {
   const [history, setHistory] = useState(loadHistory);
   const [openGuideIdx, setOpenGuideIdx] = useState(null);
   const [showVoiceSelector, setShowVoiceSelector] = useState(false);
+  // 週替わり筋トレ（day1〜3）はダンベル筋トレ移行に伴いアーカイブ（折りたたみ）に収納
+  const [showArchive, setShowArchive] = useState(false);
   const intervalRef = useRef(null);
   const startTimeRef = useRef(null);
   const pauseStartRef = useRef(null);
@@ -229,7 +231,20 @@ export default function WorkoutTimer() {
   const deepStretchCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "stretching").length;
   const yogaCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "yoga").length;
 
-  const DAY_KEYS = ["day1", "day2", "day3", "easy", "dumbbell", "morning", "evening", "stretching", "yoga"];
+  const ACTIVE_DAY_KEYS = ["easy", "dumbbell", "morning", "evening", "stretching", "yoga"];
+  const ARCHIVED_DAY_KEYS = ["day1", "day2", "day3"];
+
+  const renderDayButton = (key) => {
+    const info = getDayInfo(key);
+    const sel = selectedDay === key;
+    return (
+      <button key={key} className="btn" onClick={() => startDay(key)} style={{ background: sel ? `linear-gradient(135deg, ${info.color}, ${info.color}99)` : "rgba(255,255,255,0.08)", border: sel ? `2px solid ${info.color}` : "2px solid rgba(255,255,255,0.15)", borderRadius: 14, padding: "8px 14px", color: sel ? "#000" : "#fff", fontFamily: "inherit", fontWeight: 700, fontSize: 12, lineHeight: 1.6 }}>
+        <span style={{ fontSize: 18 }}>{info.emoji}</span><br />
+        <span style={{ fontSize: 11 }}>{info.label}</span><br />
+        <span style={{ fontSize: 10, opacity: 0.7 }}>{info.theme}</span>
+      </button>
+    );
+  };
 
   // Determine current phase label for display
   const currentPhase = currentStep?.type === "warmup" || (currentStep?.type === "countdown" && currentStep?.label?.includes("ウォーム")) ? "warmup"
@@ -261,12 +276,7 @@ export default function WorkoutTimer() {
             ラムの筋トレ
           </h1>
           <div style={{ display: "flex", gap: 4, marginTop: 3, alignItems: "center" }}>
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>週3日・1日10分</span>
-            <button className="btn" onClick={() => handleWeekChange(-1)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", fontSize: 11, padding: "0 2px", lineHeight: 1 }}>◀</button>
-            <span style={{ fontSize: 10, background: `${["#FF6B6B","#4ECDC4","#FFD93D","#a29bfe"][wi]}33`, border: `1px solid ${["#FF6B6B","#4ECDC4","#FFD93D","#a29bfe"][wi]}66`, borderRadius: 99, padding: "1px 8px", color: ["#FF6B6B","#4ECDC4","#FFD93D","#a29bfe"][wi], fontWeight: 700, cursor: "pointer", userSelect: "none" }}>
-              {weekData.label} {weekData.sublabel}
-            </span>
-            <button className="btn" onClick={() => handleWeekChange(1)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", fontSize: 11, padding: "0 2px", lineHeight: 1 }}>▶</button>
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>毎日コツコツだっちゃ</span>
           </div>
         </div>
         <div style={{ display: "flex", gap: 6 }}>
@@ -347,18 +357,30 @@ export default function WorkoutTimer() {
       </div>
 
       {/* Day selector */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 18, flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: 390 }}>
-        {DAY_KEYS.map(key => {
-          const info = getDayInfo(key);
-          const sel = selectedDay === key;
-          return (
-            <button key={key} className="btn" onClick={() => startDay(key)} style={{ background: sel ? `linear-gradient(135deg, ${info.color}, ${info.color}99)` : "rgba(255,255,255,0.08)", border: sel ? `2px solid ${info.color}` : "2px solid rgba(255,255,255,0.15)", borderRadius: 14, padding: "8px 14px", color: sel ? "#000" : "#fff", fontFamily: "inherit", fontWeight: 700, fontSize: 12, lineHeight: 1.6 }}>
-              <span style={{ fontSize: 18 }}>{info.emoji}</span><br />
-              <span style={{ fontSize: 11 }}>{info.label}</span><br />
-              <span style={{ fontSize: 10, opacity: 0.7 }}>{info.theme}</span>
-            </button>
-          );
-        })}
+      <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: 390 }}>
+        {ACTIVE_DAY_KEYS.map(renderDayButton)}
+      </div>
+
+      {/* アーカイブ：週替わり筋トレ（day1〜3）。データと記録は残したまま折りたたみに収納 */}
+      <div style={{ width: "100%", maxWidth: 390, marginBottom: 18, textAlign: "center" }}>
+        <button className="btn" onClick={() => setShowArchive(a => !a)} style={{ background: "rgba(255,255,255,0.04)", border: "1px dashed rgba(255,255,255,0.18)", borderRadius: 12, padding: "7px 16px", color: "rgba(255,255,255,0.45)", fontFamily: "inherit", fontWeight: 700, fontSize: 11 }}>
+          📦 週替わり筋トレ（アーカイブ）{showArchive ? "▲" : "▼"}
+        </button>
+        {showArchive && (
+          <div className="slide-down" style={{ marginTop: 10 }}>
+            <div style={{ display: "flex", gap: 4, justifyContent: "center", alignItems: "center", marginBottom: 8 }}>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>週3日・1日10分</span>
+              <button className="btn" onClick={() => handleWeekChange(-1)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", fontSize: 11, padding: "0 2px", lineHeight: 1 }}>◀</button>
+              <span style={{ fontSize: 10, background: `${["#FF6B6B","#4ECDC4","#FFD93D","#a29bfe"][wi]}33`, border: `1px solid ${["#FF6B6B","#4ECDC4","#FFD93D","#a29bfe"][wi]}66`, borderRadius: 99, padding: "1px 8px", color: ["#FF6B6B","#4ECDC4","#FFD93D","#a29bfe"][wi], fontWeight: 700, userSelect: "none" }}>
+                {weekData.label} {weekData.sublabel}
+              </span>
+              <button className="btn" onClick={() => handleWeekChange(1)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", fontSize: 11, padding: "0 2px", lineHeight: 1 }}>▶</button>
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+              {ARCHIVED_DAY_KEYS.map(renderDayButton)}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Timer card */}
