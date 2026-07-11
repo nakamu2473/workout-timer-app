@@ -126,7 +126,8 @@ export default function WorkoutTimer() {
   const tick = useCallback(() => {
     const t = timeLeftRef.current;
     const cs = currentStepRef.current;
-    if (t === 11 && !cs?.silent) speak("あと10秒！");
+    // やり方読み上げ中の休憩では「あと10秒」で遮らない（次種目の5秒前通知は残す）
+    if (t === 11 && !cs?.silent && !(cs?.type === "rest" && cs?.guideSpeech)) speak("あと10秒！");
     if ((t === 3 || t === 2 || t === 1) && !cs?.silent) playBeep("last3");
     // 5秒前の次種目通知は、入りのアナウンスと重ならない長さの休憩だけ（短い休憩は入りで告知済み）
     if (t === 5 && cs?.type === "rest" && !cs?.mini && cs?.nextName && !cs?.silent && (cs.duration || 0) >= 10) speak(`次は${cs.nextName}！準備してだっちゃ！`);

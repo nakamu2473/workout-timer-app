@@ -108,6 +108,9 @@ export function stepSpeech(ns) {
       else speak("次の準備だっちゃ！");
     } else if (ns.label && ns.label.includes("セット")) {
       speak("よく頑張っただっちゃ！セット完了！休憩だっちゃ！");
+    } else if (ns.guideSpeech && ns.nextName && (ns.duration || 0) >= 15) {
+      // 休憩中に次の種目のやり方を読み上げる（15秒以上の休憩のみ。5秒前の準備通知までに読み終わる長さ）
+      speak(`よく頑張っただっちゃ！次は${ns.nextName}！${ns.guideSpeech}`);
     } else if (ns.nextName && (ns.duration || 0) < 10) {
       // 10秒未満の休憩は5秒前通知が入りの音声を打ち消すので、入りで次種目を告知する
       speak(`よく頑張っただっちゃ！次は${ns.nextName}！`);
