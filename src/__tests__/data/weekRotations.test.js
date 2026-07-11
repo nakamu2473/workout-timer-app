@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, EVENING_DAY } from '../../data/weekRotations.js';
+import { WEEK_ROTATIONS, EASY_DAY, DUMBBELL_DAY, MORNING_DAY, EVENING_DAY } from '../../data/weekRotations.js';
 
 // ─── WEEK_ROTATIONS structure ─────────────────────────────────────────────────
 
@@ -87,6 +87,61 @@ describe('EASY_DAY', () => {
   it('has color and emoji', () => {
     expect(EASY_DAY.color).toMatch(/^#/);
     expect(EASY_DAY.emoji).toBeTruthy();
+  });
+});
+
+// ─── DUMBBELL_DAY ────────────────────────────────────────────────────────────
+
+describe('DUMBBELL_DAY', () => {
+  it('has sets = 1', () => {
+    expect(DUMBBELL_DAY.sets).toBe(1);
+  });
+
+  it('has no warmup', () => {
+    expect(DUMBBELL_DAY.warmup).toEqual([]);
+  });
+
+  it('has the 4 dumbbell exercises in order', () => {
+    expect(DUMBBELL_DAY.exercises.map(ex => ex.name)).toEqual([
+      'ダンベルスクワット',
+      'ダンベルショルダープレス',
+      'ダンベルロー',
+      'ダンベルカール',
+    ]);
+  });
+
+  it('every exercise states its weight in reps', () => {
+    DUMBBELL_DAY.exercises.forEach(ex => {
+      expect(ex.reps).toMatch(/kg/);
+    });
+  });
+
+  it('ダンベルロー reps includes 左右 (triggers mid-point switch announcement)', () => {
+    const row = DUMBBELL_DAY.exercises.find(ex => ex.name === 'ダンベルロー');
+    expect(row.reps).toContain('左右');
+  });
+
+  it('has a cooldown (腹式呼吸)', () => {
+    expect(DUMBBELL_DAY.cooldown.length).toBeGreaterThan(0);
+    expect(DUMBBELL_DAY.cooldown[0].name).toBe('腹式呼吸');
+  });
+
+  it('has a mainLabel that includes ダンベル', () => {
+    expect(DUMBBELL_DAY.mainLabel).toContain('ダンベル');
+  });
+
+  it('has color and emoji', () => {
+    expect(DUMBBELL_DAY.color).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    expect(DUMBBELL_DAY.emoji).toBeTruthy();
+  });
+
+  it('fits the 5-7 minute target', () => {
+    const mainSecs = DUMBBELL_DAY.exercises.reduce((s, ex, i) =>
+      s + ex.duration + (i < DUMBBELL_DAY.exercises.length - 1 ? ex.rest : 0), 0);
+    const cooldownSecs = DUMBBELL_DAY.cooldown.reduce((s, ex) => s + ex.duration, 0);
+    const total = mainSecs + cooldownSecs;
+    expect(total).toBeGreaterThanOrEqual(4.5 * 60);
+    expect(total).toBeLessThanOrEqual(7 * 60);
   });
 });
 

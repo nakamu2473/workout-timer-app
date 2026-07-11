@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { buildSchedule, getWeekIndex } from '../../utils/schedule.js';
 import { STORAGE_KEY } from '../../utils/storage.js';
-import { WEEK_ROTATIONS, EASY_DAY, MORNING_DAY, EVENING_DAY } from '../../data/weekRotations.js';
+import { WEEK_ROTATIONS, EASY_DAY, DUMBBELL_DAY, MORNING_DAY, EVENING_DAY } from '../../data/weekRotations.js';
 
 beforeEach(() => {
   localStorage.clear();
@@ -191,6 +191,39 @@ describe('buildSchedule – EASY_DAY', () => {
   it('generates the correct number of work steps', () => {
     const workSteps = getStepsByType(steps, 'work');
     expect(workSteps).toHaveLength(EASY_DAY.exercises.length);
+  });
+
+  it('has cooldown step (腹式呼吸)', () => {
+    const cooldownSteps = getStepsByType(steps, 'cooldown');
+    expect(cooldownSteps).toHaveLength(1);
+    expect(cooldownSteps[0].name).toBe('腹式呼吸');
+  });
+});
+
+// ─── buildSchedule – DUMBBELL_DAY ───────────────────────────────────────────
+
+describe('buildSchedule – DUMBBELL_DAY', () => {
+  const steps = buildSchedule('dumbbell', 0);
+
+  it('ends with done step', () => {
+    expect(steps[steps.length - 1].type).toBe('done');
+  });
+
+  it('has no warmup countdown (DUMBBELL_DAY has no warmup)', () => {
+    const countdowns = getStepsByType(steps, 'countdown');
+    const warmupCountdown = countdowns.find(s => s.label && s.label.includes('ウォームアップ'));
+    expect(warmupCountdown).toBeUndefined();
+  });
+
+  it('has the dumbbell main countdown label', () => {
+    const countdowns = getStepsByType(steps, 'countdown');
+    expect(countdowns.some(s => s.label && s.label.includes('ダンベル'))).toBe(true);
+  });
+
+  it('generates 1 set of the 4 dumbbell exercises', () => {
+    const workSteps = getStepsByType(steps, 'work');
+    expect(workSteps).toHaveLength(DUMBBELL_DAY.exercises.length);
+    workSteps.forEach(s => expect(s.set).toBe(1));
   });
 
   it('has cooldown step (腹式呼吸)', () => {

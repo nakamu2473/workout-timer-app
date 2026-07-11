@@ -220,13 +220,14 @@ export default function WorkoutTimer() {
   const weekStart = new Date(now);
   weekStart.setHours(0, 0, 0, 0);
   weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 6) % 7);
-  const weekCount = history.filter(h => new Date(h.date) >= weekStart && !["morning","evening","stretching","yoga"].includes(h.dayKey)).length;
+  const weekCount = history.filter(h => new Date(h.date) >= weekStart && !["dumbbell","morning","evening","stretching","yoga"].includes(h.dayKey)).length;
+  const dumbbellCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "dumbbell").length;
   const stretchCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "morning").length;
   const eveningCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "evening").length;
   const deepStretchCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "stretching").length;
   const yogaCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "yoga").length;
 
-  const DAY_KEYS = ["day1", "day2", "day3", "easy", "morning", "evening", "stretching", "yoga"];
+  const DAY_KEYS = ["day1", "day2", "day3", "easy", "dumbbell", "morning", "evening", "stretching", "yoga"];
 
   // Determine current phase label for display
   const currentPhase = currentStep?.type === "warmup" || (currentStep?.type === "countdown" && currentStep?.label?.includes("ウォーム")) ? "warmup"
@@ -285,6 +286,16 @@ export default function WorkoutTimer() {
             <div key={i} style={{ width: 26, height: 26, borderRadius: "50%", background: i < weekCount ? "#FFD93D" : "rgba(255,255,255,0.1)", border: `2px solid ${i < weekCount ? "#FFD93D" : "rgba(255,255,255,0.15)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>{i < weekCount ? "⭐" : ""}</div>
           ))}
           <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginLeft: 3 }}>{weekCount}/3</span>
+        </div>
+      </div>
+      {/* Dumbbell record */}
+      <div style={{ width: "100%", maxWidth: 390, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(77,150,255,0.2)", borderRadius: 14, padding: "7px 14px", marginBottom: 6, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>今週のダンベル筋トレ</div>
+        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+          {[0,1,2,3,4,5,6].map(i => (
+            <div key={i} style={{ width: 18, height: 18, borderRadius: "50%", background: i < dumbbellCount ? "#4D96FF" : "rgba(255,255,255,0.08)", border: `1px solid ${i < dumbbellCount ? "#4D96FF" : "rgba(255,255,255,0.12)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9 }}>{i < dumbbellCount ? "🏋️" : ""}</div>
+          ))}
+          <span style={{ fontSize: 11, color: "rgba(77,150,255,0.7)", marginLeft: 3 }}>{dumbbellCount}回</span>
         </div>
       </div>
       {/* Stretch record */}
