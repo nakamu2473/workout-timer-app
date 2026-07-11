@@ -80,10 +80,20 @@ function speakScript(text) {
   speakSlowChunks();
 }
 
+// 経過秒数（elapsed）に一致するcueをゆっくり読み上げる（寝たまんまヨガの誘導ナレーション用）。
+// カウント「5」「4」…を1秒刻みのcueで流すことで、音声と実時間のテンポを揃える
+export function cueSpeech(step, elapsed) {
+  if (!step?.cues) return;
+  const cue = step.cues.find(c => c.at === elapsed);
+  if (cue) speakScript(cue.text);
+}
+
 export function stepSpeech(ns) {
   if (!ns) return;
-  if (ns.script) {
-    speakScript(ns.script);
+  if (ns.cues) {
+    // at: 0 のcueはステップ入りで読み上げる。以降のcueはタイマーのtickが cueSpeech で流す
+    const opening = ns.cues.filter(c => c.at === 0).map(c => c.text).join("");
+    if (opening) speakScript(opening);
     return;
   }
   if (ns.silent) return;

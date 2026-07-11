@@ -6,7 +6,7 @@ vi.mock('../../utils/voicevox.js', () => ({
   cancelVoicevox: vi.fn(),
 }));
 
-import { speak, stepSpeech, setUseVoicevox, getUseVoicevox } from '../../utils/speech.js';
+import { speak, stepSpeech, cueSpeech, setUseVoicevox, getUseVoicevox } from '../../utils/speech.js';
 import { speakVoicevox } from '../../utils/voicevox.js';
 
 beforeEach(() => {
@@ -141,8 +141,11 @@ describe('stepSpeech', () => {
     expect(globalThis.speechSynthesis.speak).not.toHaveBeenCalled();
   });
 
-  it('speaks script steps slowly, chunked per sentence to avoid long-utterance cutoff', () => {
-    stepSpeech({ type: 'work', name: '太もも', silent: true, script: '力を入れて。ゆっくり抜いて。おやすみなさい。' });
+  it('speaks the opening (at: 0) cue slowly, chunked per sentence to avoid long-utterance cutoff', () => {
+    stepSpeech({ type: 'work', name: '太もも', silent: true, cues: [
+      { at: 0, text: '力を入れて。ゆっくり抜いて。おやすみなさい。' },
+      { at: 10, text: '後半のナレーション。' },
+    ] });
     const calls = globalThis.speechSynthesis.speak.mock.calls;
     expect(calls.length).toBe(3);
     expect(calls[0][0].text).toBe('力を入れて。');
@@ -155,10 +158,19 @@ describe('stepSpeech', () => {
     expect(globalThis.speechSynthesis.cancel).toHaveBeenCalledTimes(1);
   });
 
-  it('sends script steps to VOICEVOX with a slow speed when in voicevox mode', () => {
+  it('does not speak later cues (at > 0) at step entry — the timer tick delivers them', () => {
+    stepSpeech({ type: 'work', name: '太もも', silent: true, cues: [
+      { at: 5, text: '5' },
+    ] });
+    expect(globalThis.speechSynthesis.speak).not.toHaveBeenCalled();
+  });
+
+  it('sends the opening cue to VOICEVOX with a slow speed when in voicevox mode', () => {
     setUseVoicevox(true);
     speakVoicevox.mockResolvedValue(true);
-    stepSpeech({ type: 'work', name: '太もも', silent: true, script: '力を入れて。ゆっくり抜いて。' });
+    stepSpeech({ type: 'work', name: '太もも', silent: true, cues: [
+      { at: 0, text: '力を入れて。ゆっくり抜いて。' },
+    ] });
     expect(speakVoicevox).toHaveBeenCalledTimes(1);
     expect(speakVoicevox).toHaveBeenCalledWith('力を入れて。ゆっくり抜いて。', 0.9);
     expect(globalThis.speechSynthesis.speak).not.toHaveBeenCalled();
@@ -186,6 +198,39 @@ describe('stepSpeech', () => {
     stepSpeech({ type: 'countdown', label: '💪 メインワークアウト' });
     const utterance = lastSpokenUtterance();
     expect(utterance.text).toContain('メインワークアウト');
+  });
+});
+
+// ─── cueSpeech ──────────────────────────────────────────────────────────────
+
+describe('cueSpeech', () => {
+  const step = {
+    type: 'work', silent: true, duration: 36,
+    cues: [
+      { at: 0, text: 'ぎゅっと力を入れて。' },
+      { at: 10, text: '5' },
+      { at: 11, text: '4' },
+      { at: 16, text: 'ふっと力を抜いて。' },
+    ],
+  };
+
+  it('speaks the cue matching the elapsed second, slowly', () => {
+    cueSpeech(step, 10);
+    expect(globalThis.speechSynthesis.speak).toHaveBeenCalledTimes(1);
+    const u = lastSpokenUtterance();
+    expect(u.text).toBe('5');
+    expect(u.rate).toBeCloseTo(0.85);
+  });
+
+  it('speaks nothing when no cue matches the elapsed second', () => {
+    cueSpeech(step, 5);
+    expect(globalThis.speechSynthesis.speak).not.toHaveBeenCalled();
+  });
+
+  it('does nothing for steps without cues', () => {
+    cueSpeech({ type: 'work', duration: 40 }, 3);
+    cueSpeech(null, 3);
+    expect(globalThis.speechSynthesis.speak).not.toHaveBeenCalled();
   });
 });
 

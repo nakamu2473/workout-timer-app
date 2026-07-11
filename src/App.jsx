@@ -6,7 +6,7 @@ import { getRamMsg } from "./data/ramMessages.js";
 
 import { getWeekIndex, buildSchedule, getDayInfo as resolveDayInfo } from "./utils/schedule.js";
 import { playBeep, unlockAudio } from "./utils/audio.js";
-import { speak, stepSpeech, cancelSpeech } from "./utils/speech.js";
+import { speak, stepSpeech, cueSpeech, cancelSpeech } from "./utils/speech.js";
 import { loadHistory, saveHistory } from "./utils/storage.js";
 import { requestWakeLock, releaseWakeLock } from "./utils/wakelock.js";
 import { phaseColor, phaseBadgeLabel } from "./utils/phase.js";
@@ -132,6 +132,8 @@ export default function WorkoutTimer() {
     if (cs?.reps?.includes("左右") && !cs?.silent && cs.duration > 6 && t === Math.ceil((cs.duration || 0) / 2)) {
       speak("左右交代");
     }
+    // 経過秒数に合わせた誘導ナレーション（寝たまんまヨガ）。at: 0 はステップ入りで読み上げ済み
+    if (cs?.cues) cueSpeech(cs, (cs.duration || 0) - t + 1);
     setTimeLeft(prev => {
       if (prev <= 1) {
         pendingAdvanceRef.current = true;

@@ -55,7 +55,7 @@ export function buildSchedule(dayKey, weekIdx) {
   push({ type: "countdown", label: mainLabel, duration: 3, color: dayColor });
   for (let set = 1; set <= sets; set++) {
     exercises.forEach((ex, i) => {
-      push({ type: "work", set, sets, name: ex.name, reps: ex.reps, duration: ex.duration, ...(ex.script && { script: ex.script }) });
+      push({ type: "work", set, sets, name: ex.name, reps: ex.reps, duration: ex.duration, ...(ex.cues && { cues: ex.cues }) });
       const isLastInSet = i === exercises.length - 1;
       const isLastSet = set === sets;
       const restDuration = isLastInSet ? 30 : (ex.rest || 0);
