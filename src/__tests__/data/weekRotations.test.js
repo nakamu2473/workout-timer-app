@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { WEEK_ROTATIONS, EASY_DAY, DUMBBELL_DAY, MORNING_DAY, EVENING_DAY } from '../../data/weekRotations.js';
+import { WEEK_ROTATIONS, EASY_DAY, DUMBBELL_DAY, MORNING_DAY, EVENING_DAY, YOGA_DAY } from '../../data/weekRotations.js';
 
 // ─── WEEK_ROTATIONS structure ─────────────────────────────────────────────────
 
@@ -101,24 +101,30 @@ describe('DUMBBELL_DAY', () => {
     expect(DUMBBELL_DAY.warmup).toEqual([]);
   });
 
-  it('has the 4 dumbbell exercises in order', () => {
+  it('has the 4 dumbbell exercises + 2 posture exercises in order', () => {
     expect(DUMBBELL_DAY.exercises.map(ex => ex.name)).toEqual([
       'ダンベルスクワット',
       'ダンベルショルダープレス',
       'ダンベルロー',
       'ダンベルカール',
+      'ダンベル・リアレイズ',
+      '胸のストレッチ',
     ]);
   });
 
-  it('every exercise states its weight in reps', () => {
-    DUMBBELL_DAY.exercises.forEach(ex => {
-      expect(ex.reps).toMatch(/kg/);
+  it('keeps ダンベルロー (背中を引く動き — 姿勢改善に直結するので削らない)', () => {
+    expect(DUMBBELL_DAY.exercises.some(ex => ex.name === 'ダンベルロー')).toBe(true);
+  });
+
+  it('every dumbbell exercise states its weight in reps', () => {
+    DUMBBELL_DAY.exercises.filter(ex => ex.name.startsWith('ダンベル')).forEach(ex => {
+      expect(ex.reps, ex.name).toMatch(/kg/);
     });
   });
 
-  it('ダンベルロー reps includes 左右 (triggers mid-point switch announcement)', () => {
-    const row = DUMBBELL_DAY.exercises.find(ex => ex.name === 'ダンベルロー');
-    expect(row.reps).toContain('左右');
+  it.each(['ダンベルロー', '胸のストレッチ'])('%s reps includes 左右 (triggers mid-point switch announcement)', (name) => {
+    const ex = DUMBBELL_DAY.exercises.find(e => e.name === name);
+    expect(ex.reps).toContain('左右');
   });
 
   it('has a cooldown (腹式呼吸)', () => {
@@ -135,13 +141,13 @@ describe('DUMBBELL_DAY', () => {
     expect(DUMBBELL_DAY.emoji).toBeTruthy();
   });
 
-  it('fits the 5-7 minute target', () => {
+  it('fits the ~8 minute target (基本セット5〜7分 + 姿勢改善プラス約3分)', () => {
     const mainSecs = DUMBBELL_DAY.exercises.reduce((s, ex, i) =>
       s + ex.duration + (i < DUMBBELL_DAY.exercises.length - 1 ? ex.rest : 0), 0);
     const cooldownSecs = DUMBBELL_DAY.cooldown.reduce((s, ex) => s + ex.duration, 0);
     const total = mainSecs + cooldownSecs;
-    expect(total).toBeGreaterThanOrEqual(4.5 * 60);
-    expect(total).toBeLessThanOrEqual(7 * 60);
+    expect(total).toBeGreaterThanOrEqual(7 * 60);
+    expect(total).toBeLessThanOrEqual(9.5 * 60);
   });
 });
 
@@ -173,6 +179,66 @@ describe('EVENING_DAY', () => {
   it('has color and emoji', () => {
     expect(EVENING_DAY.color).toMatch(/^#/);
     expect(EVENING_DAY.emoji).toBeTruthy();
+  });
+});
+
+// ─── YOGA_DAY（cueベース誘導ナレーション）───────────────────────────────────
+
+describe('YOGA_DAY narration cues', () => {
+  // 「5」の1秒後に「4」が来るcueを持つ種目 = 力を入れる系
+  // （呼吸誘導のカウントアップにも「5」が含まれるため降順で判定する）
+  const countdownStart = (ex) =>
+    ex.cues.find(c => c.text === '5' && ex.cues.some(d => d.at === c.at + 1 && d.text === '4'));
+  const tensionExercises = YOGA_DAY.exercises.filter(ex => countdownStart(ex));
+
+  it('is silent with sets = 1', () => {
+    expect(YOGA_DAY.silent).toBe(true);
+    expect(YOGA_DAY.sets).toBe(1);
+  });
+
+  it('every exercise has cues starting at 0, in ascending order, within duration', () => {
+    YOGA_DAY.exercises.forEach(ex => {
+      expect(Array.isArray(ex.cues), ex.name).toBe(true);
+      expect(ex.cues[0].at, ex.name).toBe(0);
+      for (let i = 1; i < ex.cues.length; i++) {
+        expect(ex.cues[i].at, `${ex.name} cue #${i}`).toBeGreaterThan(ex.cues[i - 1].at);
+      }
+      ex.cues.forEach(c => expect(c.at, `${ex.name} "${c.text}"`).toBeLessThan(ex.duration));
+    });
+  });
+
+  it('the 6 tension exercises count down 5→1 at real 1-second intervals', () => {
+    expect(tensionExercises).toHaveLength(6);
+    tensionExercises.forEach(ex => {
+      const start = countdownStart(ex).at;
+      ['5', '4', '3', '2', '1'].forEach((n, i) => {
+        expect(ex.cues.find(c => c.at === start + i)?.text, `${ex.name} +${i}s`).toBe(n);
+      });
+    });
+  });
+
+  it('leaves at least 15 seconds to savor the release after each countdown', () => {
+    tensionExercises.forEach(ex => {
+      const lastCount = countdownStart(ex).at + 4; // 「1」の時点
+      expect(ex.duration - lastCount, ex.name).toBeGreaterThanOrEqual(15);
+    });
+  });
+
+  it('breathing guidance counts up at real 1-second intervals (4 in / 6 out)', () => {
+    const intro = YOGA_DAY.exercises[0];
+    // カウントアップ（「1」の1秒後に「2」）が吸う4拍×2回・吐く6拍×2回ぶんある
+    const upStarts = intro.cues.filter(c =>
+      c.text === '1' && intro.cues.some(d => d.at === c.at + 1 && d.text === '2'));
+    expect(upStarts).toHaveLength(4);
+    upStarts.forEach(startCue => {
+      const run = [];
+      for (let n = 1; ; n++) {
+        const cue = intro.cues.find(c => c.at === startCue.at + n - 1);
+        if (!cue || cue.text !== String(n)) break;
+        run.push(cue.text);
+      }
+      expect([4, 6]).toContain(run.length);
+    });
   });
 });
 

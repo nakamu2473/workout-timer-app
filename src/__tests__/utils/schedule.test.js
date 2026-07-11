@@ -315,10 +315,14 @@ describe('buildSchedule – yoga (silent day)', () => {
     steps.forEach(s => expect(s.silent).toBe(true));
   });
 
-  it('carries the narration script onto work steps', () => {
+  it('carries the narration cues onto work steps', () => {
     const workSteps = getStepsByType(steps, 'work');
     expect(workSteps.length).toBeGreaterThan(0);
-    workSteps.forEach(s => expect(typeof s.script).toBe('string'));
+    workSteps.forEach(s => {
+      expect(Array.isArray(s.cues)).toBe(true);
+      expect(s.cues.length).toBeGreaterThan(0);
+      expect(s.cues[0].at).toBe(0);
+    });
   });
 
   it('does not stamp silent on normal days', () => {
