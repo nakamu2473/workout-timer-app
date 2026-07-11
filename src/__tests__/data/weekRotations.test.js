@@ -101,24 +101,30 @@ describe('DUMBBELL_DAY', () => {
     expect(DUMBBELL_DAY.warmup).toEqual([]);
   });
 
-  it('has the 4 dumbbell exercises in order', () => {
+  it('has the 4 dumbbell exercises + 2 posture exercises in order', () => {
     expect(DUMBBELL_DAY.exercises.map(ex => ex.name)).toEqual([
       'ダンベルスクワット',
       'ダンベルショルダープレス',
       'ダンベルロー',
       'ダンベルカール',
+      'ダンベル・リアレイズ',
+      '胸のストレッチ',
     ]);
   });
 
-  it('every exercise states its weight in reps', () => {
-    DUMBBELL_DAY.exercises.forEach(ex => {
-      expect(ex.reps).toMatch(/kg/);
+  it('keeps ダンベルロー (背中を引く動き — 姿勢改善に直結するので削らない)', () => {
+    expect(DUMBBELL_DAY.exercises.some(ex => ex.name === 'ダンベルロー')).toBe(true);
+  });
+
+  it('every dumbbell exercise states its weight in reps', () => {
+    DUMBBELL_DAY.exercises.filter(ex => ex.name.startsWith('ダンベル')).forEach(ex => {
+      expect(ex.reps, ex.name).toMatch(/kg/);
     });
   });
 
-  it('ダンベルロー reps includes 左右 (triggers mid-point switch announcement)', () => {
-    const row = DUMBBELL_DAY.exercises.find(ex => ex.name === 'ダンベルロー');
-    expect(row.reps).toContain('左右');
+  it.each(['ダンベルロー', '胸のストレッチ'])('%s reps includes 左右 (triggers mid-point switch announcement)', (name) => {
+    const ex = DUMBBELL_DAY.exercises.find(e => e.name === name);
+    expect(ex.reps).toContain('左右');
   });
 
   it('has a cooldown (腹式呼吸)', () => {
@@ -135,13 +141,13 @@ describe('DUMBBELL_DAY', () => {
     expect(DUMBBELL_DAY.emoji).toBeTruthy();
   });
 
-  it('fits the 5-7 minute target', () => {
+  it('fits the ~8 minute target (基本セット5〜7分 + 姿勢改善プラス約3分)', () => {
     const mainSecs = DUMBBELL_DAY.exercises.reduce((s, ex, i) =>
       s + ex.duration + (i < DUMBBELL_DAY.exercises.length - 1 ? ex.rest : 0), 0);
     const cooldownSecs = DUMBBELL_DAY.cooldown.reduce((s, ex) => s + ex.duration, 0);
     const total = mainSecs + cooldownSecs;
-    expect(total).toBeGreaterThanOrEqual(4.5 * 60);
-    expect(total).toBeLessThanOrEqual(7 * 60);
+    expect(total).toBeGreaterThanOrEqual(7 * 60);
+    expect(total).toBeLessThanOrEqual(9.5 * 60);
   });
 });
 
