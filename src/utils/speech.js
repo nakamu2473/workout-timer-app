@@ -112,6 +112,7 @@ export function stepSpeech(ns) {
     else if (ns.label?.includes("朝")) speak("朝のストレッチ、スタート！");
     else if (ns.label?.includes("夜")) speak("夜のストレッチ、スタート！");
     else if (ns.label?.includes("ヨガ")) speak("寝たまんまヨガ、スタート！");
+    else if (ns.label?.includes("ダンベル")) speak("ダンベル筋トレ、スタート！");
     else if (ns.label?.includes("全身ストレッチ")) speak("全身ストレッチ、スタート！");
     else speak("メインワークアウト、スタート！");
   }

@@ -103,6 +103,19 @@ export const EASY_DAY = {
   ],
 };
 
+// 毎日のついでにやる用のダンベル基本セット（5〜7分）
+export const DUMBBELL_DAY = {
+  label: "ダンベル筋トレ", theme: "毎日5〜7分", emoji: "🏋️", color: "#4D96FF", sets: 1,
+  mainLabel: "🏋️ ダンベル筋トレ",
+  warmup: [], cooldown: [{ name: "腹式呼吸", reps: "5回", duration: 40, rest: 0 }],
+  exercises: [
+    { name: "ダンベルスクワット", reps: "12〜15回（4kg×2）", duration: 55, rest: 20 },
+    { name: "ダンベルショルダープレス", reps: "12〜15回（2kg×2）", duration: 50, rest: 20 },
+    { name: "ダンベルロー", reps: "片腕12回ずつ（4kg・左右交代）", duration: 75, rest: 20 },
+    { name: "ダンベルカール", reps: "15回（2kg×2）", duration: 50, rest: 20 },
+  ],
+};
+
 export const MORNING_DAY = {
   label: "朝ストレッチ", theme: "ベッドで起床前", emoji: "🌅", color: "#FFA07A", sets: 1,
   mainLabel: "🌅 朝のストレッチ",
