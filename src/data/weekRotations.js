@@ -103,12 +103,20 @@ export const EASY_DAY = {
   ],
 };
 
-// 毎日のついでにやる用のダンベル基本セット（約10分）＋姿勢改善プラス＋お尻
+// 毎日のついでにやる用のダンベルセット（準備運動・クールダウン込みで約10分）
 // ダンベルロー（背中を引く動き）は姿勢改善に直結するので削らないこと
+// 胸のストレッチはストレッチ系メニューでやるため、ここには入れない
 export const DUMBBELL_DAY = {
   label: "ダンベル筋トレ", theme: "毎日10分・姿勢改善", emoji: "🏋️", color: "#4D96FF", sets: 1,
   mainLabel: "🏋️ ダンベル筋トレ",
-  warmup: [], cooldown: [{ name: "腹式呼吸", reps: "5回", duration: 40, rest: 0 }],
+  warmup: [
+    { name: "肩まわし", reps: "前後10回ずつ", duration: 30, rest: 10 },
+    { name: "股関節回し", reps: "左右10回ずつ", duration: 30, rest: 10 },
+  ],
+  cooldown: [
+    { name: "肩甲骨ストレッチ", reps: "左右各15秒", duration: 35, rest: 5 },
+    { name: "腹式呼吸", reps: "5回", duration: 40, rest: 0 },
+  ],
   exercises: [
     { name: "ダンベルスクワット", reps: "12〜15回（4kg×2）", duration: 55, rest: 20 },
     { name: "ダンベル・ヒップリフト", reps: "15回（4kg×1）", duration: 55, rest: 20 },
@@ -116,7 +124,6 @@ export const DUMBBELL_DAY = {
     { name: "ダンベルロー", reps: "片腕12回ずつ（4kg・左右交代）", duration: 75, rest: 20 },
     { name: "ダンベルカール", reps: "15回（2kg×2）", duration: 50, rest: 20 },
     { name: "ダンベル・リアレイズ", reps: "12〜15回（2kg×2）", duration: 55, rest: 20 },
-    { name: "胸のストレッチ", reps: "30秒×2（左右交代）", duration: 70, rest: 20 },
   ],
 };
 

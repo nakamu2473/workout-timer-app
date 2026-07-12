@@ -210,10 +210,10 @@ describe('buildSchedule – DUMBBELL_DAY', () => {
     expect(steps[steps.length - 1].type).toBe('done');
   });
 
-  it('has no warmup countdown (DUMBBELL_DAY has no warmup)', () => {
+  it('has a warmup countdown and warmup steps (肩まわし・股関節回し)', () => {
     const countdowns = getStepsByType(steps, 'countdown');
-    const warmupCountdown = countdowns.find(s => s.label && s.label.includes('ウォームアップ'));
-    expect(warmupCountdown).toBeUndefined();
+    expect(countdowns.some(s => s.label && s.label.includes('ウォームアップ'))).toBe(true);
+    expect(getStepsByType(steps, 'warmup').map(s => s.name)).toEqual(['肩まわし', '股関節回し']);
   });
 
   it('has the dumbbell main countdown label', () => {
@@ -227,10 +227,9 @@ describe('buildSchedule – DUMBBELL_DAY', () => {
     workSteps.forEach(s => expect(s.set).toBe(1));
   });
 
-  it('has cooldown step (腹式呼吸)', () => {
+  it('has cooldown steps (肩甲骨ストレッチ → 腹式呼吸)', () => {
     const cooldownSteps = getStepsByType(steps, 'cooldown');
-    expect(cooldownSteps).toHaveLength(1);
-    expect(cooldownSteps[0].name).toBe('腹式呼吸');
+    expect(cooldownSteps.map(s => s.name)).toEqual(['肩甲骨ストレッチ', '腹式呼吸']);
   });
 
   it('rest steps carry the next exercise voice guide (guideSpeech) for 休憩中読み上げ', () => {
