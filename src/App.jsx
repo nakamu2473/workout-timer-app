@@ -474,8 +474,9 @@ export default function WorkoutTimer() {
       )}
 
       {/* Step list — warmup + main + cooldown */}
+      {/* textAlign: left は #root の text-align: center 継承を打ち消す（名前より reps が長い種目で名前が中央にずれるため） */}
       {selectedDay && currentStep?.type !== "done" && dayInfo && (
-        <div style={{ width: "100%", maxWidth: 390 }}>
+        <div style={{ width: "100%", maxWidth: 390, textAlign: "left" }}>
           {/* Warmup */}
           {dayInfo.warmup && dayInfo.warmup.length > 0 && (<>
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 7, letterSpacing: 1 }}>── ウォームアップ ──</div>

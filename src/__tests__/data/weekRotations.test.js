@@ -97,8 +97,8 @@ describe('DUMBBELL_DAY', () => {
     expect(DUMBBELL_DAY.sets).toBe(1);
   });
 
-  it('has no warmup', () => {
-    expect(DUMBBELL_DAY.warmup).toEqual([]);
+  it('has a light warmup (肩まわし・股関節回し)', () => {
+    expect(DUMBBELL_DAY.warmup.map(ex => ex.name)).toEqual(['肩まわし', '股関節回し']);
   });
 
   it('has the dumbbell exercises + posture + glute exercises in order', () => {
@@ -109,7 +109,6 @@ describe('DUMBBELL_DAY', () => {
       'ダンベルロー',
       'ダンベルカール',
       'ダンベル・リアレイズ',
-      '胸のストレッチ',
     ]);
   });
 
@@ -123,14 +122,13 @@ describe('DUMBBELL_DAY', () => {
     });
   });
 
-  it.each(['ダンベルロー', '胸のストレッチ'])('%s reps includes 左右 (triggers mid-point switch announcement)', (name) => {
-    const ex = DUMBBELL_DAY.exercises.find(e => e.name === name);
+  it('ダンベルロー reps includes 左右 (triggers mid-point switch announcement)', () => {
+    const ex = DUMBBELL_DAY.exercises.find(e => e.name === 'ダンベルロー');
     expect(ex.reps).toContain('左右');
   });
 
-  it('has a cooldown (腹式呼吸)', () => {
-    expect(DUMBBELL_DAY.cooldown.length).toBeGreaterThan(0);
-    expect(DUMBBELL_DAY.cooldown[0].name).toBe('腹式呼吸');
+  it('has a cooldown ending with 腹式呼吸', () => {
+    expect(DUMBBELL_DAY.cooldown.map(ex => ex.name)).toEqual(['肩甲骨ストレッチ', '腹式呼吸']);
   });
 
   it('has a mainLabel that includes ダンベル', () => {
@@ -142,13 +140,15 @@ describe('DUMBBELL_DAY', () => {
     expect(DUMBBELL_DAY.emoji).toBeTruthy();
   });
 
-  it('fits the ~10 minute target (基本セット + 姿勢改善プラス + お尻)', () => {
+  it('fits the ~10 minute target including warmup and cooldown', () => {
+    const warmupSecs = DUMBBELL_DAY.warmup.reduce((s, ex) => s + ex.duration + ex.rest, 0);
     const mainSecs = DUMBBELL_DAY.exercises.reduce((s, ex, i) =>
       s + ex.duration + (i < DUMBBELL_DAY.exercises.length - 1 ? ex.rest : 0), 0);
-    const cooldownSecs = DUMBBELL_DAY.cooldown.reduce((s, ex) => s + ex.duration, 0);
-    const total = mainSecs + cooldownSecs;
-    expect(total).toBeGreaterThanOrEqual(8 * 60);
-    expect(total).toBeLessThanOrEqual(11 * 60);
+    const cooldownSecs = DUMBBELL_DAY.cooldown.reduce((s, ex, i) =>
+      s + ex.duration + (i < DUMBBELL_DAY.cooldown.length - 1 ? ex.rest : 0), 0);
+    const total = warmupSecs + mainSecs + cooldownSecs;
+    expect(total).toBeGreaterThanOrEqual(9 * 60);
+    expect(total).toBeLessThanOrEqual(10.5 * 60);
   });
 });
 
