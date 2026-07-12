@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { buildSchedule, getWeekIndex } from '../../utils/schedule.js';
 import { STORAGE_KEY } from '../../utils/storage.js';
 import { WEEK_ROTATIONS, EASY_DAY, DUMBBELL_DAY, MORNING_DAY, EVENING_DAY } from '../../data/weekRotations.js';
+import { EXERCISE_GUIDE } from '../../data/exerciseGuide.js';
 
 beforeEach(() => {
   localStorage.clear();
@@ -230,6 +231,22 @@ describe('buildSchedule – DUMBBELL_DAY', () => {
     const cooldownSteps = getStepsByType(steps, 'cooldown');
     expect(cooldownSteps).toHaveLength(1);
     expect(cooldownSteps[0].name).toBe('腹式呼吸');
+  });
+
+  it('rest steps carry the next exercise voice guide (guideSpeech) for 休憩中読み上げ', () => {
+    const rests = getStepsByType(steps, 'rest').filter(s => !s.mini);
+    expect(rests.length).toBe(DUMBBELL_DAY.exercises.length - 1);
+    rests.forEach(r => {
+      expect(typeof r.guideSpeech, `rest before ${r.nextName}`).toBe('string');
+      expect(r.guideSpeech).toBe(EXERCISE_GUIDE[r.nextName].speech);
+    });
+  });
+
+  it('every dumbbell exercise has a speech (short voice guide) in EXERCISE_GUIDE', () => {
+    DUMBBELL_DAY.exercises.forEach(ex => {
+      expect(typeof EXERCISE_GUIDE[ex.name]?.speech, ex.name).toBe('string');
+      expect(EXERCISE_GUIDE[ex.name].speech.length).toBeGreaterThan(0);
+    });
   });
 });
 

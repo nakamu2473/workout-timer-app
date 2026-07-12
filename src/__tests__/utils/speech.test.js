@@ -116,6 +116,20 @@ describe('stepSpeech', () => {
     expect(utterance.text).not.toContain('ランジ');
   });
 
+  it('reads the next exercise voice guide during rest when guideSpeech is present', () => {
+    stepSpeech({ type: 'rest', nextName: 'ダンベルロー', duration: 20, guideSpeech: '肘を天井に向かって引くっちゃ。' });
+    const utterance = lastSpokenUtterance();
+    expect(utterance.text).toContain('次はダンベルロー');
+    expect(utterance.text).toContain('肘を天井に向かって引くっちゃ。');
+  });
+
+  it('skips the voice guide on rests shorter than 15s (would not fit)', () => {
+    stepSpeech({ type: 'rest', nextName: 'ダンベルロー', duration: 5, guideSpeech: '肘を天井に向かって引くっちゃ。' });
+    const utterance = lastSpokenUtterance();
+    expect(utterance.text).toContain('次はダンベルロー');
+    expect(utterance.text).not.toContain('肘を天井');
+  });
+
   it('announces rest step with set completion message when label includes セット', () => {
     stepSpeech({ type: 'rest', label: 'セット1完了！あと1セットだっちゃ', nextName: null });
     const utterance = lastSpokenUtterance();

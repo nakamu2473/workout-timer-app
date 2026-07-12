@@ -126,7 +126,8 @@ export default function WorkoutTimer() {
   const tick = useCallback(() => {
     const t = timeLeftRef.current;
     const cs = currentStepRef.current;
-    if (t === 11 && !cs?.silent) speak("あと10秒！");
+    // やり方読み上げ中の休憩では「あと10秒」で遮らない（次種目の5秒前通知は残す）
+    if (t === 11 && !cs?.silent && !(cs?.type === "rest" && cs?.guideSpeech)) speak("あと10秒！");
     if ((t === 3 || t === 2 || t === 1) && !cs?.silent) playBeep("last3");
     // 5秒前の次種目通知は、入りのアナウンスと重ならない長さの休憩だけ（短い休憩は入りで告知済み）
     if (t === 5 && cs?.type === "rest" && !cs?.mini && cs?.nextName && !cs?.silent && (cs.duration || 0) >= 10) speak(`次は${cs.nextName}！準備してだっちゃ！`);
@@ -224,7 +225,6 @@ export default function WorkoutTimer() {
   const weekStart = new Date(now);
   weekStart.setHours(0, 0, 0, 0);
   weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 6) % 7);
-  const weekCount = history.filter(h => new Date(h.date) >= weekStart && !["dumbbell","morning","evening","stretching","yoga"].includes(h.dayKey)).length;
   const dumbbellCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "dumbbell").length;
   const stretchCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "morning").length;
   const eveningCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "evening").length;
@@ -290,16 +290,6 @@ export default function WorkoutTimer() {
         </div>
       </div>
 
-      {/* Streak */}
-      <div style={{ width: "100%", maxWidth: 390, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, padding: "9px 14px", marginBottom: 6, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>今週のワークアウト</div>
-        <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-          {[0,1,2].map(i => (
-            <div key={i} style={{ width: 26, height: 26, borderRadius: "50%", background: i < weekCount ? "#FFD93D" : "rgba(255,255,255,0.1)", border: `2px solid ${i < weekCount ? "#FFD93D" : "rgba(255,255,255,0.15)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>{i < weekCount ? "⭐" : ""}</div>
-          ))}
-          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginLeft: 3 }}>{weekCount}/3</span>
-        </div>
-      </div>
       {/* Dumbbell record */}
       <div style={{ width: "100%", maxWidth: 390, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(77,150,255,0.2)", borderRadius: 14, padding: "7px 14px", marginBottom: 6, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>今週のダンベル筋トレ</div>

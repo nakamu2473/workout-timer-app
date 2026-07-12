@@ -1,4 +1,5 @@
 import { WEEK_ROTATIONS, EASY_DAY, DUMBBELL_DAY, MORNING_DAY, EVENING_DAY, STRETCHING_DAY, YOGA_DAY } from "../data/weekRotations.js";
+import { EXERCISE_GUIDE } from "../data/exerciseGuide.js";
 import { STORAGE_KEY } from "./storage.js";
 
 // 最初の記録日を起点に4週サイクル（記録なしは Week A）
@@ -61,11 +62,14 @@ export function buildSchedule(dayKey, weekIdx) {
       const restDuration = isLastInSet ? 30 : (ex.rest || 0);
       if ((!isLastSet || !isLastInSet) && restDuration > 0) {
         const nextEx = isLastInSet ? exercises[0] : exercises[i + 1];
+        // ガイドに speech（短縮版やり方）がある種目は、休憩中に次のやり方を読み上げる
+        const guideSpeech = EXERCISE_GUIDE[nextEx?.name]?.speech;
         push({
           type: "rest",
           duration: restDuration,
           label: isLastInSet ? `セット${set}完了！あと${sets - set}セットだっちゃ` : "休憩",
           nextName: nextEx?.name,
+          ...(guideSpeech && { guideSpeech }),
         });
       }
     });
