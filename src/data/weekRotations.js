@@ -103,14 +103,15 @@ export const EASY_DAY = {
   ],
 };
 
-// 毎日のついでにやる用のダンベル基本セット（約8分）＋姿勢改善プラス（5・6番目）
+// 毎日のついでにやる用のダンベル基本セット（約10分）＋姿勢改善プラス＋お尻
 // ダンベルロー（背中を引く動き）は姿勢改善に直結するので削らないこと
 export const DUMBBELL_DAY = {
-  label: "ダンベル筋トレ", theme: "毎日8分・姿勢改善", emoji: "🏋️", color: "#4D96FF", sets: 1,
+  label: "ダンベル筋トレ", theme: "毎日10分・姿勢改善", emoji: "🏋️", color: "#4D96FF", sets: 1,
   mainLabel: "🏋️ ダンベル筋トレ",
   warmup: [], cooldown: [{ name: "腹式呼吸", reps: "5回", duration: 40, rest: 0 }],
   exercises: [
     { name: "ダンベルスクワット", reps: "12〜15回（4kg×2）", duration: 55, rest: 20 },
+    { name: "ダンベル・ヒップリフト", reps: "15回（4kg×1）", duration: 55, rest: 20 },
     { name: "ダンベルショルダープレス", reps: "12〜15回（2kg×2）", duration: 50, rest: 20 },
     { name: "ダンベルロー", reps: "片腕12回ずつ（4kg・左右交代）", duration: 75, rest: 20 },
     { name: "ダンベルカール", reps: "15回（2kg×2）", duration: 50, rest: 20 },

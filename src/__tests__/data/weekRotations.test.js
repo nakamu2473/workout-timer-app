@@ -101,9 +101,10 @@ describe('DUMBBELL_DAY', () => {
     expect(DUMBBELL_DAY.warmup).toEqual([]);
   });
 
-  it('has the 4 dumbbell exercises + 2 posture exercises in order', () => {
+  it('has the dumbbell exercises + posture + glute exercises in order', () => {
     expect(DUMBBELL_DAY.exercises.map(ex => ex.name)).toEqual([
       'ダンベルスクワット',
+      'ダンベル・ヒップリフト',
       'ダンベルショルダープレス',
       'ダンベルロー',
       'ダンベルカール',
@@ -141,13 +142,13 @@ describe('DUMBBELL_DAY', () => {
     expect(DUMBBELL_DAY.emoji).toBeTruthy();
   });
 
-  it('fits the ~8 minute target (基本セット5〜7分 + 姿勢改善プラス約3分)', () => {
+  it('fits the ~10 minute target (基本セット + 姿勢改善プラス + お尻)', () => {
     const mainSecs = DUMBBELL_DAY.exercises.reduce((s, ex, i) =>
       s + ex.duration + (i < DUMBBELL_DAY.exercises.length - 1 ? ex.rest : 0), 0);
     const cooldownSecs = DUMBBELL_DAY.cooldown.reduce((s, ex) => s + ex.duration, 0);
     const total = mainSecs + cooldownSecs;
-    expect(total).toBeGreaterThanOrEqual(7 * 60);
-    expect(total).toBeLessThanOrEqual(9.5 * 60);
+    expect(total).toBeGreaterThanOrEqual(8 * 60);
+    expect(total).toBeLessThanOrEqual(11 * 60);
   });
 });
 
