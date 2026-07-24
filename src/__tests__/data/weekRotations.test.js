@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { WEEK_ROTATIONS, EASY_DAY, DUMBBELL_DAY, MORNING_DAY, EVENING_DAY, YOGA_DAY } from '../../data/weekRotations.js';
+import { WEEK_ROTATIONS, EASY_DAY, DUMBBELL_DAY, MORNING_DAY, TAISO_DAY, EVENING_DAY, YOGA_DAY } from '../../data/weekRotations.js';
+import { EXERCISE_GUIDE } from '../../data/exerciseGuide.js';
 
 // ─── WEEK_ROTATIONS structure ─────────────────────────────────────────────────
 
@@ -240,6 +241,50 @@ describe('YOGA_DAY narration cues', () => {
       }
       expect([4, 6]).toContain(run.length);
     });
+  });
+});
+
+// ─── TAISO_DAY（朝の立ち体操）─────────────────────────────────────────────────
+
+describe('TAISO_DAY', () => {
+  it('has sets = 1', () => {
+    expect(TAISO_DAY.sets).toBe(1);
+  });
+
+  it('has no warmup or cooldown', () => {
+    expect(TAISO_DAY.warmup).toEqual([]);
+    expect(TAISO_DAY.cooldown).toEqual([]);
+  });
+
+  it('has multiple exercises', () => {
+    expect(TAISO_DAY.exercises.length).toBeGreaterThan(3);
+  });
+
+  it('starts with 背伸び深呼吸 and ends with 深呼吸で整える', () => {
+    expect(TAISO_DAY.exercises[0].name).toBe('背伸び深呼吸');
+    expect(TAISO_DAY.exercises[TAISO_DAY.exercises.length - 1].name).toBe('深呼吸で整える');
+  });
+
+  it('fits the ~5 minute target', () => {
+    const total = TAISO_DAY.exercises.reduce((s, ex, i) =>
+      s + ex.duration + (i < TAISO_DAY.exercises.length - 1 ? ex.rest : 0), 0);
+    expect(total).toBeGreaterThanOrEqual(4.5 * 60);
+    expect(total).toBeLessThanOrEqual(5.5 * 60);
+  });
+
+  it('every exercise has an EXERCISE_GUIDE entry', () => {
+    TAISO_DAY.exercises.forEach(ex => {
+      expect(EXERCISE_GUIDE[ex.name], ex.name).toBeDefined();
+    });
+  });
+
+  it('has a mainLabel that includes 体操', () => {
+    expect(TAISO_DAY.mainLabel).toContain('体操');
+  });
+
+  it('has color and emoji', () => {
+    expect(TAISO_DAY.color).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    expect(TAISO_DAY.emoji).toBeTruthy();
   });
 });
 

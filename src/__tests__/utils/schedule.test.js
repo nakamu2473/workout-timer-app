@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { buildSchedule, getWeekIndex } from '../../utils/schedule.js';
 import { STORAGE_KEY } from '../../utils/storage.js';
-import { WEEK_ROTATIONS, EASY_DAY, DUMBBELL_DAY, MORNING_DAY, EVENING_DAY } from '../../data/weekRotations.js';
+import { WEEK_ROTATIONS, EASY_DAY, DUMBBELL_DAY, MORNING_DAY, TAISO_DAY, EVENING_DAY } from '../../data/weekRotations.js';
 import { EXERCISE_GUIDE } from '../../data/exerciseGuide.js';
 
 beforeEach(() => {
@@ -271,6 +271,35 @@ describe('buildSchedule – MORNING_DAY', () => {
   it('has the morning stretch main countdown label', () => {
     const countdowns = getStepsByType(steps, 'countdown');
     expect(countdowns.some(s => s.label && s.label.includes('朝'))).toBe(true);
+  });
+});
+
+// ─── buildSchedule – TAISO_DAY ──────────────────────────────────────────────
+
+describe('buildSchedule – TAISO_DAY', () => {
+  const steps = buildSchedule('taiso', 0);
+
+  it('ends with done step', () => {
+    expect(steps[steps.length - 1].type).toBe('done');
+  });
+
+  it('generates correct number of work steps', () => {
+    const workSteps = getStepsByType(steps, 'work');
+    expect(workSteps).toHaveLength(TAISO_DAY.exercises.length);
+  });
+
+  it('has no warmup or cooldown steps', () => {
+    expect(countByType(steps, 'warmup')).toBe(0);
+    expect(countByType(steps, 'cooldown')).toBe(0);
+  });
+
+  it('has the taiso main countdown label', () => {
+    const countdowns = getStepsByType(steps, 'countdown');
+    expect(countdowns.some(s => s.label && s.label.includes('体操'))).toBe(true);
+  });
+
+  it('is not silent', () => {
+    steps.forEach(s => expect(s.silent).toBeUndefined());
   });
 });
 

@@ -144,6 +144,24 @@ export const MORNING_DAY = {
   ],
 };
 
+// 朝イチに立ったままできる約5分のラジオ体操風メニュー
+// ベッドでやる朝ストレッチ（MORNING_DAY）と違い、着替えたあと・出かける前に体を目覚めさせる用
+export const TAISO_DAY = {
+  label: "朝の体操", theme: "立って5分", emoji: "🌞", color: "#F5B041", sets: 1,
+  mainLabel: "🌞 朝の体操",
+  warmup: [], cooldown: [],
+  exercises: [
+    { name: "背伸び深呼吸", reps: "ゆっくり5回", duration: 30, rest: 5 },
+    { name: "腕まわし", reps: "前後10回ずつ", duration: 30, rest: 5 },
+    { name: "体側伸ばし", reps: "交互に8回", duration: 30, rest: 5 },
+    { name: "体ひねり運動", reps: "交互に10回", duration: 35, rest: 5 },
+    { name: "前後屈運動", reps: "前後5回ずつ", duration: 35, rest: 5 },
+    { name: "その場足踏み", reps: "30秒", duration: 35, rest: 5 },
+    { name: "カーフレイズ", reps: "15回", duration: 30, rest: 5 },
+    { name: "深呼吸で整える", reps: "ゆっくり4回", duration: 30, rest: 0 },
+  ],
+};
+
 export const STRETCHING_DAY = {
   label: "ストレッチ", theme: "じっくり25分", emoji: "🧘", color: "#7C6BAF", sets: 1,
   mainLabel: "🧘 全身ストレッチ",
