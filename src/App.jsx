@@ -227,11 +227,12 @@ export default function WorkoutTimer() {
   weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 6) % 7);
   const dumbbellCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "dumbbell").length;
   const stretchCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "morning").length;
+  const taisoCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "taiso").length;
   const eveningCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "evening").length;
   const deepStretchCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "stretching").length;
   const yogaCount = history.filter(h => new Date(h.date) >= weekStart && h.dayKey === "yoga").length;
 
-  const ACTIVE_DAY_KEYS = ["easy", "dumbbell", "morning", "evening", "stretching", "yoga"];
+  const ACTIVE_DAY_KEYS = ["easy", "dumbbell", "morning", "taiso", "evening", "stretching", "yoga"];
   const ARCHIVED_DAY_KEYS = ["day1", "day2", "day3"];
 
   const renderDayButton = (key) => {
@@ -308,6 +309,16 @@ export default function WorkoutTimer() {
             <div key={i} style={{ width: 18, height: 18, borderRadius: "50%", background: i < stretchCount ? "#FFA07A" : "rgba(255,255,255,0.08)", border: `1px solid ${i < stretchCount ? "#FFA07A" : "rgba(255,255,255,0.12)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9 }}>{i < stretchCount ? "🌅" : ""}</div>
           ))}
           <span style={{ fontSize: 11, color: "rgba(255,160,122,0.6)", marginLeft: 3 }}>{stretchCount}回</span>
+        </div>
+      </div>
+      {/* Morning taiso record */}
+      <div style={{ width: "100%", maxWidth: 390, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(245,176,65,0.2)", borderRadius: 14, padding: "7px 14px", marginBottom: 6, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>今週の朝の体操</div>
+        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+          {[0,1,2,3,4,5,6].map(i => (
+            <div key={i} style={{ width: 18, height: 18, borderRadius: "50%", background: i < taisoCount ? "#F5B041" : "rgba(255,255,255,0.08)", border: `1px solid ${i < taisoCount ? "#F5B041" : "rgba(255,255,255,0.12)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9 }}>{i < taisoCount ? "🌞" : ""}</div>
+          ))}
+          <span style={{ fontSize: 11, color: "rgba(245,176,65,0.7)", marginLeft: 3 }}>{taisoCount}回</span>
         </div>
       </div>
       {/* Evening stretch record */}

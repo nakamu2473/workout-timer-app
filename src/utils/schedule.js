@@ -1,4 +1,4 @@
-import { WEEK_ROTATIONS, EASY_DAY, DUMBBELL_DAY, MORNING_DAY, EVENING_DAY, STRETCHING_DAY, YOGA_DAY } from "../data/weekRotations.js";
+import { WEEK_ROTATIONS, EASY_DAY, DUMBBELL_DAY, MORNING_DAY, TAISO_DAY, EVENING_DAY, STRETCHING_DAY, YOGA_DAY } from "../data/weekRotations.js";
 import { EXERCISE_GUIDE } from "../data/exerciseGuide.js";
 import { STORAGE_KEY } from "./storage.js";
 
@@ -23,6 +23,7 @@ export function getDayInfo(dayKey, weekIdx) {
   if (dayKey === "easy") return EASY_DAY;
   if (dayKey === "dumbbell") return DUMBBELL_DAY;
   if (dayKey === "morning") return MORNING_DAY;
+  if (dayKey === "taiso") return TAISO_DAY;
   if (dayKey === "evening") return EVENING_DAY;
   if (dayKey === "stretching") return STRETCHING_DAY;
   if (dayKey === "yoga") return YOGA_DAY;
