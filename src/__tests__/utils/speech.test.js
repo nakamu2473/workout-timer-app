@@ -6,7 +6,7 @@ vi.mock('../../utils/voicevox.js', () => ({
   cancelVoicevox: vi.fn(),
 }));
 
-import { speak, stepSpeech, cueSpeech, setUseVoicevox, getUseVoicevox } from '../../utils/speech.js';
+import { speak, stepSpeech, cueSpeech, unlockSpeech, setUseVoicevox, getUseVoicevox } from '../../utils/speech.js';
 import { speakVoicevox } from '../../utils/voicevox.js';
 
 beforeEach(() => {
@@ -202,6 +202,12 @@ describe('stepSpeech', () => {
     expect(utterance.text).toContain('クールダウン');
   });
 
+  it('announces the standing taiso countdown as 体操 (not 朝のストレッチ)', () => {
+    stepSpeech({ type: 'countdown', label: '🌞 朝の体操' });
+    const utterance = lastSpokenUtterance();
+    expect(utterance.text).toBe('朝の体操、スタート！');
+  });
+
   it('announces morning stretch countdown', () => {
     stepSpeech({ type: 'countdown', label: '🌅 朝のストレッチ' });
     const utterance = lastSpokenUtterance();
@@ -244,6 +250,24 @@ describe('cueSpeech', () => {
   it('does nothing for steps without cues', () => {
     cueSpeech({ type: 'work', duration: 40 }, 3);
     cueSpeech(null, 3);
+    expect(globalThis.speechSynthesis.speak).not.toHaveBeenCalled();
+  });
+});
+
+// ─── unlockSpeech（iOSのTTSアンロック）──────────────────────────────────────
+
+describe('unlockSpeech', () => {
+  it('speaks one silent utterance on the first tap, then nothing on later taps', () => {
+    unlockSpeech();
+    const calls = globalThis.speechSynthesis.speak.mock.calls;
+    expect(calls.length).toBe(1);
+    expect(calls[0][0].volume).toBe(0);
+    // 空文字だとアンロックしないiOS実装があるため、中身のある文字列を渡す
+    expect(calls[0][0].text.length).toBeGreaterThan(0);
+
+    globalThis.speechSynthesis.speak.mockClear();
+    unlockSpeech();
+    unlockSpeech();
     expect(globalThis.speechSynthesis.speak).not.toHaveBeenCalled();
   });
 });

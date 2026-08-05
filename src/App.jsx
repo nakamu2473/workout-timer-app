@@ -6,7 +6,7 @@ import { getRamMsg } from "./data/ramMessages.js";
 
 import { getWeekIndex, buildSchedule, getDayInfo as resolveDayInfo } from "./utils/schedule.js";
 import { playBeep, unlockAudio } from "./utils/audio.js";
-import { speak, stepSpeech, cueSpeech, cancelSpeech } from "./utils/speech.js";
+import { speak, stepSpeech, cueSpeech, cancelSpeech, unlockSpeech } from "./utils/speech.js";
 import { loadHistory, saveHistory } from "./utils/storage.js";
 import { requestWakeLock, releaseWakeLock } from "./utils/wakelock.js";
 import { phaseColor, phaseBadgeLabel } from "./utils/phase.js";
@@ -93,6 +93,8 @@ export default function WorkoutTimer() {
 
   const startDay = useCallback((dayKey) => {
     cancelSpeech();
+    // メニュー選択のタップも（スタートより早い）アンロックの機会として使う
+    unlockSpeech();
     const s = buildSchedule(dayKey, weekIdx);
     setSchedule(s); setSelectedDay(dayKey);
     setStepIdx(0); setTimeLeft(s[0].duration);
@@ -178,6 +180,9 @@ export default function WorkoutTimer() {
   const handleStartPause = () => {
     if (currentStep?.type === "done") return;
     unlockAudio();
+    // タップ中に読み上げを1回走らせてiOSのTTSをアンロックする。
+    // ヨガは開始カウントダウンが無音で、ここで何も喋らないとナレーションが出ない
+    unlockSpeech();
     if (!running) {
       const isFirstStart = !startTimeRef.current;
       if (isFirstStart) startTimeRef.current = Date.now();
