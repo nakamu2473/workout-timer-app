@@ -17,6 +17,24 @@ export function setUseVoicevox(enabled) {
   localStorage.setItem("ram_voice_mode", enabled ? "voicevox" : "browser");
 }
 
+// iOS Safari は speechSynthesis.speak() を「ユーザー操作のハンドラ内」で
+// 一度呼んでおかないと、以降のプログラム発火の読み上げを黙って無視する。
+// 寝たまんまヨガは開始カウントダウンが silent で、タップ中に何も喋らないため
+// アンロックされず、そのあとのナレーションが全部消えていた。
+// タップ時に無音の発話を1回流してアンロックする（他メニューは開始アナウンスが兼ねている）
+let _speechUnlocked = false;
+export function unlockSpeech() {
+  if (_speechUnlocked) return;
+  try {
+    if (!window.speechSynthesis) return;
+    // 空文字だとiOSがアンロックしない実装があるため半角スペースを読ませる
+    const u = new SpeechSynthesisUtterance(" ");
+    u.volume = 0;
+    window.speechSynthesis.speak(u);
+    _speechUnlocked = true;
+  } catch { /* ignore */ }
+}
+
 // 再生中の音声（ブラウザTTS・VOICEVOX両方）を止める
 export function cancelSpeech() {
   _speakSeq++;
@@ -122,6 +140,7 @@ export function stepSpeech(ns) {
   } else if (ns.type === "countdown") {
     if (ns.label?.includes("ウォーム")) speak("ウォームアップ、スタート！");
     else if (ns.label?.includes("クール")) speak("クールダウン、スタート！");
+    else if (ns.label?.includes("体操")) speak("朝の体操、スタート！");
     else if (ns.label?.includes("朝")) speak("朝のストレッチ、スタート！");
     else if (ns.label?.includes("夜")) speak("夜のストレッチ、スタート！");
     else if (ns.label?.includes("ヨガ")) speak("寝たまんまヨガ、スタート！");
