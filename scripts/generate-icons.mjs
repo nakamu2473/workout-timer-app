@@ -8,8 +8,15 @@ import sharp from "sharp";
 
 const publicDir = join(dirname(fileURLToPath(import.meta.url)), "..", "public");
 const rounded = readFileSync(join(publicDir, "app-icon.svg"), "utf8");
-// maskable / apple-touch はOS側が角を丸めるので、角丸なしの全面塗りを使う
-const fullBleed = rounded.replace('rx="112"', 'rx="0"');
+
+// maskable / apple-touch はOS側が角を丸めるので、角丸なしの全面塗りを使う。
+// 単純な文字列置換だとコメント中の rx="..." を先に拾って背景がそのまま残るため、
+// 背景の <rect> の rx 属性だけを狙って落とす
+const BG_RECT_RX = /(<rect\b[^>]*?)\s+rx="[^"]*"/;
+if (!BG_RECT_RX.test(rounded)) {
+  throw new Error("app-icon.svg の背景 <rect> に rx が見つからない。角丸の書き方を変えた？");
+}
+const fullBleed = rounded.replace(BG_RECT_RX, "$1");
 
 const targets = [
   { file: "pwa-192x192.png", size: 192, svg: rounded },

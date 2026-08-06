@@ -46,6 +46,15 @@ describe('PWA manifest', () => {
       expect(icon.type).toBe('image/png');
     });
   });
+
+  // 角丸を外す置換に失敗しても書き出し自体は成功してしまい、
+  // 角丸のまま maskable として配ると端末側の切り抜きで角が欠ける
+  it('the maskable icon is full-bleed — not a copy of the rounded one', () => {
+    const maskable = PWA_MANIFEST.icons.find(i => i.purpose === 'maskable');
+    const sameSizeAny = PWA_MANIFEST.icons.find(i => i.sizes === maskable.sizes && !i.purpose);
+    expect(sameSizeAny, '比較用の同サイズ any アイコン').toBeDefined();
+    expect(readFileSync(publicFile(maskable.src)).equals(readFileSync(publicFile(sameSizeAny.src)))).toBe(false);
+  });
 });
 
 // ─── index.html ──────────────────────────────────────────────────────────────
