@@ -10,6 +10,18 @@
 - **種目ガイド**: 各種目のやり方とコツをカード表示
 - **記録**: 実施履歴をlocalStorageに保存、週ごとの実施回数を表示
 - **スリープ防止**: ワークアウト中はWake Lock APIで画面を点灯維持
+- **PWA**: ホーム画面に追加すると全画面(standalone)で起動。Service Workerが一式をキャッシュするのでオフラインでも動く
+
+## ホーム画面に追加する
+
+- **iPhone (Safari)**: 共有ボタン → 「ホーム画面に追加」
+- **Android (Chrome)**: メニュー → 「アプリをインストール」
+
+インストールするとブラウザのURLバーが消え、機内モードや電波の悪い場所でもそのまま使えます。記録はこれまで通り端末のlocalStorageに残ります。
+
+新しいバージョンをデプロイした場合は、次回アプリを開いたときに自動で更新されます(`registerType: 'autoUpdate'`)。
+
+> Service Workerは `npm run dev` では無効にしてあります(キャッシュで変更が見えなくなるため)。PWAの挙動を確認するときは `npm run build && npm run preview` を使ってください。
 
 ## 開発
 
@@ -18,7 +30,14 @@ npm install
 npm run dev      # 開発サーバー起動
 npm test         # テスト実行 (vitest)
 npm run lint     # ESLint
-npm run build    # 本番ビルド
+npm run build    # 本番ビルド (Service Worker と manifest も生成)
+npm run preview  # ビルド結果を配信 (PWAの動作確認用)
+```
+
+アプリアイコンは `public/app-icon.svg` が元データです。デザインを変えたときだけPNGを書き出し直してください:
+
+```bash
+npm i --no-save sharp && node scripts/generate-icons.mjs
 ```
 
 VOICEVOX音声を使う場合は、ローカルで VOICEVOX エンジン(`localhost:50021`)を起動してから設定画面で有効化してください。未起動の場合は自動でブラウザTTSにフォールバックします。

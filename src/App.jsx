@@ -257,8 +257,10 @@ export default function WorkoutTimer() {
     : currentStep?.type === "cooldown" || (currentStep?.type === "countdown" && currentStep?.label?.includes("クール")) ? "cooldown"
     : "main";
 
+  // padding の safe-area は、ホーム画面から起動（standalone）したときに
+  // ステータスバー/ホームバーへ内容がかぶらないようにするためのもの
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)", fontFamily: "'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif", display: "flex", flexDirection: "column", alignItems: "center", padding: "20px 14px 48px", color: "#fff" }}>
+    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)", fontFamily: "'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif", display: "flex", flexDirection: "column", alignItems: "center", padding: "calc(20px + env(safe-area-inset-top)) 14px calc(48px + env(safe-area-inset-bottom))", color: "#fff" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }

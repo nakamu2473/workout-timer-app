@@ -54,6 +54,15 @@ body {
   margin: 0;
 }
 
+/* ── PWA（ホーム画面から全画面起動）用 ── */
+html,
+body {
+  /* 端で弾んだとき（ラバーバンド）に白地が覗かないようアプリ側の背景色に合わせる */
+  background: #0f0c29;
+  /* 引っ張って再読み込みされるとタイマーの進行が消えるので止める */
+  overscroll-behavior-y: none;
+}
+
 #root {
   width: 1126px;
   max-width: 100%;

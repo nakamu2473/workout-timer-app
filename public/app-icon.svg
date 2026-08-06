@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <!-- 夜明けの空。上から 夜 → 紫 → 赤紫 → 朝焼け → 地平線際 -->
+    <linearGradient id="sky" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0%"   stop-color="#2A2461"/>
+      <stop offset="28%"  stop-color="#523E85"/>
+      <stop offset="54%"  stop-color="#9E6890"/>
+      <stop offset="78%"  stop-color="#E89678"/>
+      <stop offset="100%" stop-color="#FFDAB2"/>
+    </linearGradient>
+    <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#FFF3D2"/>
+      <stop offset="100%" stop-color="#FFB265"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop offset="0%"   stop-color="#FFD9A0" stop-opacity="0.55"/>
+      <stop offset="60%"  stop-color="#FFC08A" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#FFC08A" stop-opacity="0"/>
+    </radialGradient>
+    <!-- 水平線より上だけを見せて、太陽と光線を「昇りかけ」にする -->
+    <clipPath id="aboveHorizon"><rect x="0" y="0" width="512" height="336"/></clipPath>
+  </defs>
+
+  <!-- 背景。scripts/generate-icons.mjs がこの rect から角丸を外して
+       maskable / apple-touch 用の全面塗りを書き出す -->
+  <rect width="512" height="512" rx="112" fill="url(#sky)"/>
+
+  <circle cx="256" cy="336" r="190" fill="url(#glow)"/>
+
+  <!-- 放射状の光線。中心(256,336)から191°〜349°に9本。
+       真横まで振ると水平線と重なって線が途切れて見えるので内側に寄せている。
+       外径198はマスカブルの安全領域（中心から半径205px）に収めるための上限 -->
+  <g clip-path="url(#aboveHorizon)" fill="#EBB88C">
+    <path d="M 161.8 317.7 L 59.9 309.0 L 64.0 287.6 Z" opacity="0.48"/>
+    <path d="M 173.5 286.9 L 80.5 244.3 L 91.7 225.6 Z" opacity="0.26"/>
+    <path d="M 194.9 261.9 L 121.8 190.4 L 138.6 176.5 Z" opacity="0.48"/>
+    <path d="M 223.6 245.6 L 178.9 153.6 L 199.4 146.3 Z" opacity="0.26"/>
+    <path d="M 256.0 240.0 L 245.1 138.3 L 266.9 138.3 Z" opacity="0.48"/>
+    <path d="M 288.4 245.6 L 312.6 146.3 L 333.1 153.6 Z" opacity="0.26"/>
+    <path d="M 317.1 261.9 L 373.4 176.5 L 390.2 190.4 Z" opacity="0.48"/>
+    <path d="M 338.5 286.9 L 420.3 225.6 L 431.5 244.3 Z" opacity="0.26"/>
+    <path d="M 350.2 317.7 L 448.0 287.6 L 452.1 309.0 Z" opacity="0.48"/>
+  </g>
+
+  <circle cx="256" cy="336" r="86" fill="url(#sun)" clip-path="url(#aboveHorizon)"/>
+
+  <!-- 水平線と、その手前の反射。白に寄せると浮くので空の暖色に落としてある -->
+  <g stroke="#E9C0A2" stroke-linecap="round">
+    <line x1="90"  y1="336" x2="422" y2="336" stroke-width="7"   opacity="0.7"/>
+    <line x1="146" y1="378" x2="366" y2="378" stroke-width="5.3" opacity="0.35"/>
+  </g>
+</svg>
