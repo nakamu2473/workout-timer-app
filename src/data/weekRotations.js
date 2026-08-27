@@ -145,20 +145,23 @@ export const MORNING_DAY = {
   ],
 };
 
-// 朝イチに立ったままできる約5分のラジオ体操風メニュー
+// 朝イチに立ったままできる約6分のラジオ体操風メニュー
 // ベッドでやる朝ストレッチ（MORNING_DAY）と違い、着替えたあと・出かける前に体を目覚めさせる用
+// duration は「入りのアナウンス約3〜4秒＋実施時間」で配分する。
+// reps に「左右」「前後」を含む種目は中間地点で交代の読み上げが入る（App.jsxのtick）
 export const TAISO_DAY = {
-  label: "朝の体操", theme: "立って5分", emoji: "🌞", color: "#F5B041", sets: 1,
+  label: "朝の体操", theme: "立って6分", emoji: "🌞", color: "#F5B041", sets: 1,
   mainLabel: "🌞 朝の体操",
   warmup: [], cooldown: [],
   exercises: [
-    { name: "背伸び深呼吸", reps: "ゆっくり5回", duration: 30, rest: 5 },
-    { name: "腕まわし", reps: "前後10回ずつ", duration: 30, rest: 5 },
+    { name: "背伸び深呼吸", reps: "ゆっくり5回", duration: 35, rest: 5 },
+    { name: "腕まわし", reps: "前後10回ずつ", duration: 35, rest: 5 },
     { name: "体側伸ばし", reps: "交互に8回", duration: 30, rest: 5 },
-    { name: "体ひねり運動", reps: "交互に10回", duration: 35, rest: 5 },
-    { name: "前後屈運動", reps: "前後5回ずつ", duration: 35, rest: 5 },
+    { name: "体ひねり運動", reps: "交互に10回", duration: 30, rest: 5 },
+    { name: "前後屈運動", reps: "前後5回ずつ", duration: 30, rest: 5 },
     { name: "その場足踏み", reps: "30秒", duration: 35, rest: 5 },
-    { name: "カーフレイズ", reps: "15回", duration: 30, rest: 5 },
+    { name: "カーフレイズ", reps: "15回", duration: 35, rest: 5 },
+    { name: "アキレス腱伸ばし", reps: "左右各20秒", duration: 45, rest: 5 },
     { name: "深呼吸で整える", reps: "ゆっくり4回", duration: 30, rest: 0 },
   ],
 };
