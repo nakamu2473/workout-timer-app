@@ -133,9 +133,10 @@ export default function WorkoutTimer() {
     if ((t === 3 || t === 2 || t === 1) && !cs?.silent) playBeep("last3");
     // 5秒前の次種目通知は、入りのアナウンスと重ならない長さの休憩だけ（短い休憩は入りで告知済み）
     if (t === 5 && cs?.type === "rest" && !cs?.mini && cs?.nextName && !cs?.silent && (cs.duration || 0) >= 10) speak(`次は${cs.nextName}！準備してだっちゃ！`);
-    // 左右がある種目は中間地点で「左右交代」を読み上げる
-    if (cs?.reps?.includes("左右") && !cs?.silent && cs.duration > 6 && t === Math.ceil((cs.duration || 0) / 2)) {
-      speak("左右交代");
+    // 左右・前後がある種目は中間地点で交代を読み上げる（腕まわしの前→後ろ回し切替など）
+    const switchCue = cs?.reps?.includes("左右") ? "左右交代" : cs?.reps?.includes("前後") ? "前後交代" : null;
+    if (switchCue && !cs?.silent && cs.duration > 6 && t === Math.ceil((cs.duration || 0) / 2)) {
+      speak(switchCue);
     }
     // 経過秒数に合わせた誘導ナレーション（寝たまんまヨガ）。at: 0 はステップ入りで読み上げ済み
     if (cs?.cues) cueSpeech(cs, (cs.duration || 0) - t + 1);
