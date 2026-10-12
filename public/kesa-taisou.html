@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2E3A63">
+<title>けさの体操帖</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+<style>
+/* layout: 朝焼けの帯の下に「気分」チップ → ジャンルの札が並ぶ。札を開くと動きの一覧、はじめるで1動作ずつのタイマー */
+:root{
+  --bg:#EEF1F6;
+  --paper:#FFFFFF;
+  --ink:#1E2738;
+  --muted:#5C6678;
+  --line:#D6DCE6;
+  --accent:#B9740A;
+  --accent-soft:#F6E7C8;
+  --dawn1:#2E3A63;
+  --dawn2:#C77B5A;
+  --dawn3:#F2C46B;
+  --display:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif;
+  --body:"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121725; --paper:#1B2234; --ink:#E7EBF3; --muted:#9AA4B8; --line:#2C3550;
+    --accent:#F0B54A; --accent-soft:#3A3220;
+    --dawn1:#0E1428; --dawn2:#5B3A52; --dawn3:#B9823A;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121725; --paper:#1B2234; --ink:#E7EBF3; --muted:#9AA4B8; --line:#2C3550;
+  --accent:#F0B54A; --accent-soft:#3A3220;
+  --dawn1:#0E1428; --dawn2:#5B3A52; --dawn3:#B9823A;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.7}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:0 48px}
+header.sky{
+  margin-inline:-16px;padding:calc(28px + env(safe-area-inset-top,0px)) 20px 26px;
+  background:linear-gradient(180deg,var(--dawn1) 0%,var(--dawn2) 62%,var(--dawn3) 100%);
+  color:#FFF8EC;position:relative;overflow:hidden;
+}
+header.sky::after{
+  content:"";position:absolute;left:50%;bottom:-70px;width:140px;height:140px;margin-left:-70px;
+  border-radius:50%;background:radial-gradient(circle,#FFE7A8 0%,#FFD06E 45%,rgba(255,208,110,0) 70%);
+}
+header.sky h1{font-family:var(--display);font-weight:900;font-size:28px;margin:0;letter-spacing:.04em;text-wrap:balance;position:relative;z-index:1}
+header.sky p{margin:4px 0 0;font-size:13px;opacity:.9;position:relative;z-index:1}
+.back{position:relative;z-index:1;display:inline-block;margin-bottom:8px;font-size:12px;color:#FFF8EC;opacity:.85}
+.last{position:relative;z-index:1;margin-top:10px;font-size:12px;display:inline-block;padding:2px 10px;border-radius:99px;background:rgba(0,0,0,.25)}
+h2{font-family:var(--display);font-weight:700;font-size:17px;margin:24px 0 10px}
+.moods{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  font:inherit;font-size:14px;border:1px solid var(--line);background:var(--paper);color:var(--ink);
+  padding:6px 14px;border-radius:99px;cursor:pointer;
+}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip:focus-visible,.btn:focus-visible,.card summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.pickrow{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.btn{
+  font:inherit;font-weight:700;border:0;border-radius:12px;padding:10px 18px;cursor:pointer;
+  background:var(--accent);color:#FFFFFF;
+}
+:root[data-theme="dark"] .btn{color:#1B1408}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn{color:#1B1408}}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.hint{font-size:13px;color:var(--muted)}
+.list{display:grid;gap:10px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px}
+.card.dim{opacity:.45}
+.card.picked{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.card summary{list-style:none;cursor:pointer;padding:14px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}
+.card summary::-webkit-details-marker{display:none}
+.glyph{width:40px;height:40px;border-radius:10px;background:var(--accent-soft);display:grid;place-items:center;font-family:var(--display);font-weight:900;font-size:18px;color:var(--accent)}
+.ttl{min-width:0}
+.ttl b{font-family:var(--display);font-size:16px;display:block;line-height:1.35}
+.ttl span{font-size:12px;color:var(--muted)}
+.new{display:inline-block;margin-left:6px;padding:0 6px;border-radius:6px;background:var(--accent);color:#fff;font-size:11px;font-family:var(--body);font-weight:700;vertical-align:2px}
+:root[data-theme="dark"] .new{color:#1B1408}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .new{color:#1B1408}}
+.poses{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:4px;font-size:12px;color:var(--muted)}
+.pose{display:inline-flex;align-items:center;gap:2px;padding:0 6px 0 4px;border-radius:99px;border:1px solid var(--line);background:var(--bg);white-space:nowrap}
+.pose i{font-style:normal;font-size:14px;line-height:1}
+.poses .arr{opacity:.6;font-size:11px}
+.futon{display:inline-block;padding:1px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-weight:700;white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 12px;font-size:12px;color:var(--muted)}
+ol.moves li .pi{font-size:13px;margin-right:4px}
+.player .ppose{font-size:14px;color:var(--muted)}
+.player .ppose.change{color:var(--accent);font-weight:700}
+.min{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.body{padding:0 16px 16px;border-top:1px dashed var(--line)}
+.body .about{font-size:13px;color:var(--muted);margin:10px 0}
+ol.moves{margin:0;padding-left:1.4em;display:grid;gap:6px}
+ol.moves li b{font-weight:700}
+ol.moves li small{display:block;color:var(--muted);font-size:13px;line-height:1.6}
+ol.moves .sec{font-variant-numeric:tabular-nums;color:var(--accent);font-size:12px;margin-left:6px}
+.body .btn{margin-top:12px}
+.note{font-size:12px;color:var(--muted);margin-top:28px;border-top:1px solid var(--line);padding-top:12px}
+
+/* player */
+.player{position:fixed;inset:0;background:var(--bg);z-index:10;display:flex;flex-direction:column;
+  padding:calc(env(safe-area-inset-top,0px) + 16px) 20px calc(env(safe-area-inset-bottom,0px) + 20px)}
+.player[hidden],[hidden]{display:none!important}
+.player .top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.player .stage{flex:1;display:flex;flex-direction:column;justify-content:center;gap:12px;max-width:560px;margin:0 auto;width:100%}
+.player .count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.player h3{font-family:var(--display);font-weight:900;font-size:26px;margin:0;line-height:1.35;text-wrap:balance}
+.player .how{font-size:16px;margin:0}
+.ring{width:150px;height:150px;margin:8px auto 0;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .t{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-weight:900;font-size:40px;font-variant-numeric:tabular-nums}
+.player .next{font-size:13px;color:var(--muted);text-align:center;min-height:1.5em}
+.player .ctrl{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.done{text-align:center}
+.done h3{margin-bottom:6px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="sky">
+    <a class="back" href="./">← ラムの筋トレにもどる</a>
+    <h1>けさの体操帖</h1>
+    <p>古今東西の朝の動きから、今日の気分でひとつ選ぶ</p>
+    <div class="last" id="last" hidden></div>
+  </header>
+
+  <h2>けさの気分は？</h2>
+  <div class="moods" id="moods" role="group" aria-label="気分"></div>
+  <div class="pickrow">
+    <button class="btn" id="omakase" type="button">おまかせで選ぶ</button>
+    <span class="hint" id="pickhint">気分を選ぶと、合うジャンルが前に出てくるっちゃ</span>
+  </div>
+
+  <h2>ジャンル</h2>
+  <div class="legend" id="legend" aria-label="姿勢のアイコン"></div>
+  <div class="list" id="list"></div>
+
+  <p class="note">痛みが出たらその動きは飛ばしてOK。反動をつけず、息を止めずにゆっくり動くのが基本だっちゃ（デンマーク体操風だけはリズムで振るけど、振り幅は小さくていいっちゃ）。秒数は目安で、短くしても長くしてもかまわないっちゃ。「おまかせ」は最近やった3つをよけて選ぶっちゃ。</p>
+</div>
+
+<div class="player" id="player" hidden>
+  <div class="top"><span id="pGenre"></span><button class="btn ghost" id="pClose" type="button">やめる</button></div>
+  <div class="stage" id="pStage">
+    <div class="count" id="pCount"></div>
+    <div class="ppose" id="pPose"></div>
+    <h3 id="pName"></h3>
+    <p class="how" id="pHow"></p>
+    <div class="ring" aria-hidden="true">
+      <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--line)" stroke-width="7"/><circle id="pArc" cx="50" cy="50" r="44" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="276.46" stroke-dashoffset="0"/></svg>
+      <div class="t" id="pTime">0</div>
+    </div>
+    <div class="next" id="pNext"></div>
+    <div class="ctrl">
+      <button class="btn ghost" id="pPrev" type="button">もどる</button>
+      <button class="btn" id="pToggle" type="button">一時停止</button>
+      <button class="btn ghost" id="pSkip" type="button">つぎへ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MOODS = [
+  {id:"darui", label:"だるい・寒い"},
+  {id:"bonyari", label:"ぼんやり"},
+  {id:"shakitto", label:"シャキッとしたい"},
+  {id:"shizuka", label:"静かに整えたい"},
+  {id:"asobi", label:"遊びたい"}
+];
+
+const GENRES = [
+  {id:"bed", glyph:"床", name:"ベッドで寝たまま", origin:"布団から出る前に", moods:["darui","bonyari"],
+   about:"起き上がる前に、寝たままの姿勢で体に「朝だよ」と知らせる流れ。",
+   moves:[
+    ["全身ぐーっと伸び",30,"仰向けで両手を頭の上へ。つま先まで引っぱり合って、息を吐いて脱力。","L"],
+    ["足首ぐるぐる",30,"両足首を外回し、内回し。ふくらはぎから血がめぐる感じ。","L"],
+    ["膝パタン",60,"両膝を立てて、そろえたまま左右へゆっくり倒す。肩は床につけたまま。","L"],
+    ["片膝かかえ",60,"片膝を胸へ引き寄せて30秒、反対も30秒。","L"],
+    ["両膝かかえてゆらゆら",30,"両膝を抱えて、背中で左右に小さく揺れる。","L"],
+    ["足裏合わせて脱力",60,"足の裏を合わせて膝を開き、腕は横に。呼吸だけ数える。","L"]
+   ]},
+  {id:"tanden", glyph:"丹", name:"丹田呼吸", origin:"日本・明治末〜大正の呼吸健康法", moods:["darui","shizuka"], added:"2026-10-12",
+   about:"おへその下（丹田）に手を置いて、長く吐く呼吸。前半は布団の中のままでできる。体を動かす気になれない朝の入口に。",
+   moves:[
+    ["お腹に手を置く",30,"仰向けで膝を立て、両手をおへその下に重ねる。まずはふつうに数回呼吸。","L"],
+    ["細く長く吐き切る",60,"口から細く長く吐いて、お腹をゆっくりへこませる。吐き切ったら鼻から自然に吸う。","L"],
+    ["4つ吸って8つ吐く",90,"鼻から4カウントで吸い、口から8カウントで吐く。苦しければ吐くのは6でOK。","L"],
+    ["お腹で手を押し返す",60,"吸うときにお腹で手を押し返すようにふくらませる。肩と胸はなるべく動かさない。","L"],
+    ["起きて同じ呼吸",60,"起き上がってあぐらか椅子に座り、背筋を伸ばして同じ呼吸を続ける。","S"],
+    ["ふつうの呼吸に戻す",30,"数えるのをやめて、呼吸を自然にまかせる。手のあたたかさを感じて終わり。","S"]
+   ]},
+  {id:"yoga", glyph:"息", name:"かんたん朝ヨガ", origin:"インド発祥・やさしい流れ", moods:["bonyari","shizuka"],
+   about:"呼吸に合わせて背骨を前後左右に動かす、ゆるめのフロー。",
+   moves:[
+    ["山のポーズで深呼吸",40,"足を腰幅に立ち、吸って両手を上へ、吐いて下ろす。","T"],
+    ["キャット＆カウ",60,"四つ這いで、吐いて背中を丸め、吸って胸を前へ。","Q"],
+    ["ダウンドッグ",40,"お尻を高く上げて三角形に。膝は曲げたままでOK。","Q"],
+    ["ローランジ",60,"片脚を大きく前へ、後ろの膝は床に。脚の付け根を伸ばす。左右30秒。","Q"],
+    ["座ってねじり",60,"あぐらで背筋を伸ばし、吐きながら上半身をひねる。左右30秒。","S"],
+    ["チャイルドポーズ",60,"正座からおでこを床へ、腕は前に伸ばして休む。","Q"]
+   ]},
+  {id:"swai", glyph:"振", name:"スワイショウ", origin:"中国・気功の腕振り（甩手）", moods:["bonyari","darui"], added:"2026-10-12",
+   about:"立って腕をぶらぶら振るだけの気功。順番も形も覚えなくていいので、頭がまだ寝ている朝向き。",
+   moves:[
+    ["ゆるめて立つ",30,"足を肩幅に開き、膝を少しゆるめる。肩を一度すくめてストンと落とす。","T"],
+    ["前後に振る",90,"両腕をそろえて前後にぶらぶら振る。前は肩の高さまで、後ろは自然にまかせる。","T"],
+    ["左右に振る",90,"腰から体を左右にひねり、腕はでんでん太鼓のように体に巻きつかせる。顔もいっしょに後ろを見る。","T"],
+    ["肩ゆすり",30,"腕を下ろしたまま、肩だけ小刻みに上下にゆする。","T"],
+    ["ボールを抱えて立つ",60,"胸の前で大きなボールを抱えるように腕で輪を作り、膝をゆるめたまま静かに立つ（站椿）。","T"],
+    ["手をお腹に収める",30,"両手をおへその下に重ねて、深呼吸を3回。","T"]
+   ]},
+  {id:"taisou", glyph:"拍", name:"かんたん朝体操", origin:"日本・ラジオ体操（1928年〜）風", moods:["shakitto"],
+   about:"テンポよく全身を動かして目を覚ます。号令を自分でかけるつもりで。",
+   moves:[
+    ["その場で足踏み",30,"腕を振ってリズムよく。だんだん膝を高く。","T"],
+    ["腕を大きく回す",40,"前回し20秒、後ろ回し20秒。肩甲骨から動かす。","T"],
+    ["体を横に倒す",40,"片手を上げて反対側へ。左右交互に。","T"],
+    ["体をひねる",40,"腰に手を当てて、上半身を左右にリズムよくひねる。","T"],
+    ["胸を開いて深呼吸",30,"両手を横に広げながら吸って、閉じながら吐く。","T"],
+    ["かかと上げ下げ",30,"ゆっくり上げて、ゆっくり下ろす。ふらつく時は壁に手を。","T"]
+   ]},
+  {id:"denmark", glyph:"丁", name:"デンマーク体操風", origin:"デンマーク・ニルス・ブックの基本体操（1920年代〜）風", moods:["shakitto","asobi"], added:"2026-10-12",
+   about:"腕や上体を振り子のように大きく振る北欧の体操を、朝用に小さくまとめたもの。1931年にはブック一行が来日して公演し、日本の体操にも影響を残した。本式の再現ではなく、雰囲気を借りた簡略版。",
+   moves:[
+    ["腕を振って足踏み",30,"腕を大きく振りながら、その場で軽く足踏み。","T"],
+    ["腕の振り子",40,"膝を軽く曲げ伸ばししながら、両腕を前後に振り子のように振る。","T"],
+    ["振り下ろして起きる",40,"両腕を上から前へ振り下ろして軽く前かがみ、反動を少し使って起きる。腰が気になる日は膝を曲げて小さく。","T"],
+    ["左右に振ってひねる",40,"両腕を水平にして、体ごと左右へリズムよく振る。","T"],
+    ["横に二回弾む",40,"片腕を頭の上へ、横に「いち・に」と2回弾むように倒す。左右交互。","T"],
+    ["かかとで弾む",30,"かかとを上げ下げして、その場で小さく弾む。跳ばなくてOK。","T"],
+    ["腕を広げて深呼吸",30,"両腕を横から大きく上げて吸い、下ろしながら吐く。","T"]
+   ]},
+  {id:"hachidan", glyph:"錦", name:"八段錦", origin:"中国・宋代ごろからの気功", moods:["shizuka","bonyari"],
+   about:"太極拳に似たゆっくりした8つの動き。名前は「八つの錦のように美しい動き」の意味。",
+   moves:[
+    ["両手で天を支える",60,"両手を組み、手のひらで天井を押し上げて下ろす。4〜6回。","T"],
+    ["弓を引く",60,"腰を落とし、片腕で弓を引くように横へ伸ばす。左右交互。","T"],
+    ["上下に押し分ける",60,"片手は頭上へ、片手は下へ押す。左右交互。","T"],
+    ["後ろを振り返る",60,"体は正面のまま、首だけゆっくり後ろを見る。左右交互。","T"],
+    ["頭と尾を揺らす",60,"腰を落として、上半身を左右へ大きく円を描く。小さめでOK。","T"],
+    ["両手で足をなぞる",60,"背中から脚の後ろをなぞって前屈し、ゆっくり起きる。","T"],
+    ["拳を突き出す",60,"腰を落とし、拳をゆっくり前へ。左右交互。","T"],
+    ["かかとを落とす",30,"かかとを上げて、ストンと落とす。7回。","T"]
+   ]},
+  {id:"makko", glyph:"真", name:"真向法", origin:"日本・昭和初期", moods:["darui","shizuka"],
+   about:"座ったままの4動作。股関節まわりと脚の裏側をじっくり伸ばす。",
+   moves:[
+    ["足裏合わせて前屈",60,"足の裏を合わせて、背筋を伸ばしたまま前へ倒れる。","S"],
+    ["脚を伸ばして前屈",60,"両脚を前に伸ばし、つま先を立てて前へ倒れる。","S"],
+    ["開脚して前屈",60,"脚を開ける範囲で開いて、前へ倒れる。","S"],
+    ["割り座で後ろへ",60,"正座から膝を開いてお尻を床へ。できる範囲で後ろへ。膝がつらい日は飛ばす。","S"]
+   ]},
+  {id:"pilates", glyph:"芯", name:"朝ピラティス", origin:"ドイツ出身のピラティス氏・20世紀前半", moods:["shakitto","asobi"],
+   about:"呼吸とお腹の奥の力で背骨を1つずつ動かす。じわっと体が温まる。",
+   moves:[
+    ["胸式呼吸",40,"仰向けで肋骨を横に広げて吸い、吐きながらお腹を薄く。","L"],
+    ["ペルビックカール",60,"仰向けで膝を立て、背骨を下から1つずつ持ち上げて、上から下ろす。","L"],
+    ["バードドッグ",60,"四つ這いで右手と左脚を伸ばしてキープ。左右交互。","Q"],
+    ["うつ伏せで胸起こし",40,"うつ伏せで手を肩の横に置き、胸だけ少し浮かせる。","L"],
+    ["座ってひねり",60,"脚を前に伸ばして座り、両腕を横に広げて上半身をひねる。左右交互。","S"],
+    ["ロールダウン",40,"立って、頭から背骨を丸めて下ろし、下から積み上げて戻る。","T"]
+   ]},
+  {id:"egypt", glyph:"陽", name:"古代エジプト壁画ごっこ", origin:"壁画・彫像のポーズを借りたお遊び", moods:["asobi"],
+   about:"古代の体操の再現ではなく、壁画や彫像でおなじみのポーズを借りた遊びメニュー。ナイルのほとりの朝をどうぞ。",
+   moves:[
+    ["ラーを迎える礼拝",30,"両手のひらを顔の高さで前に向けて掲げ、朝日に深呼吸。壁画の礼拝の手の形。","T"],
+    ["王の立像の一歩",60,"左足を一歩前に出して立ち、胸を張ってキープ。片側30秒ずつ入れ替え。","T"],
+    ["壁画の横向き",40,"顔は横、肩は正面のまま。上半身をひねってキープ。左右交互。","T"],
+    ["喜びのヒエログリフ",30,"両腕をY字に高く上げて伸びる。「高い・喜ぶ」を表す文字の人の姿。","T"],
+    ["踊り子のそらし",30,"両手を腰に当て、胸を軽く天井へ。深くはそらさない。","T"],
+    ["座る書記",60,"あぐらで背筋をまっすぐ、膝の上に巻物を広げたつもりで静かに呼吸。","S"]
+   ]}
+];
+
+const POSES = {
+  L:{icon:"🛏️", label:"寝て"},
+  Q:{icon:"🐈", label:"四つ這い"},
+  S:{icon:"🧘", label:"座って"},
+  T:{icon:"🧍", label:"立って"}
+};
+/* ジャンル内で出てくる姿勢を、出てくる順に重複なしで */
+const posesOf = g => g.moves.reduce((a,m)=> a.at(-1)===m[3] ? a : [...a, m[3]], []).filter((c,i,a)=>a.indexOf(c)===i);
+const poseTag = c => `<span class="pose"><i aria-hidden="true">${POSES[c].icon}</i>${POSES[c].label}</span>`;
+
+const store = {
+  get(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+let mood = null;
+const RECENT_N = 3;
+const NEW_DAYS = 21;
+const fmtMin = s => { const m = Math.round(s/60); return m < 1 ? "1分未満" : `約${m}分`; };
+const total = g => g.moves.reduce((a,m)=>a+m[1],0);
+const isNew = g => g.added && (Date.now() - new Date(g.added).getTime()) < NEW_DAYS*864e5;
+
+/* 最近やったジャンル（新しい順）。旧版の lastGenre だけある場合もそこから始める */
+function recent(){
+  const r = store.get("recentGenres");
+  if(Array.isArray(r)) return r;
+  const last = store.get("lastGenre");
+  return last ? [last.id] : [];
+}
+
+function renderLast(){
+  const last = store.get("lastGenre");
+  const el = document.getElementById("last");
+  if(last){
+    const g = GENRES.find(x=>x.id===last.id);
+    if(g){ el.textContent = `前回：${g.name}（${last.date}）`; el.hidden = false; }
+  }
+}
+
+function renderMoods(){
+  const box = document.getElementById("moods");
+  box.innerHTML = "";
+  MOODS.forEach(m=>{
+    const b = document.createElement("button");
+    b.type="button"; b.className="chip"; b.id="mood-"+m.id; b.textContent=m.label;
+    b.setAttribute("aria-pressed", mood===m.id ? "true":"false");
+    b.onclick = ()=>{ mood = (mood===m.id) ? null : m.id; renderMoods(); renderList(); };
+    box.appendChild(b);
+  });
+}
+
+function renderList(pickedId){
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+  const sorted = [...GENRES].sort((a,b)=>{
+    if(!mood) return 0;
+    return (b.moods.includes(mood)?1:0) - (a.moods.includes(mood)?1:0);
+  });
+  sorted.forEach(g=>{
+    const d = document.createElement("details");
+    d.className = "card";
+    if(mood && !g.moods.includes(mood)) d.classList.add("dim");
+    if(pickedId===g.id){ d.classList.add("picked"); d.open = true; }
+    d.innerHTML = `
+      <summary>
+        <div class="glyph">${g.glyph}</div>
+        <div class="ttl"><b>${g.name}${isNew(g) ? '<span class="new">NEW</span>' : ""}</b><span>${g.origin}</span>
+          <div class="poses">${g.moves[0][3]==="L" ? '<span class="futon">布団の中から</span>' : ""}${posesOf(g).map(poseTag).join('<span class="arr" aria-label="から">→</span>')}</div></div>
+        <div class="min">${fmtMin(total(g))}</div>
+      </summary>
+      <div class="body">
+        <p class="about">${g.about}</p>
+        <ol class="moves">${g.moves.map(m=>`<li><span class="pi" title="${POSES[m[3]].label}" aria-label="${POSES[m[3]].label}">${POSES[m[3]].icon}</span><b>${m[0]}</b><span class="sec">${m[1]}秒</span><small>${m[2]}</small></li>`).join("")}</ol>
+        <button class="btn" type="button" data-start="${g.id}">これではじめる</button>
+      </div>`;
+    list.appendChild(d);
+  });
+  list.querySelectorAll("[data-start]").forEach(b=> b.onclick = ()=> startPlayer(b.dataset.start));
+}
+
+document.getElementById("omakase").onclick = ()=>{
+  const base = GENRES.filter(g=> !mood || g.moods.includes(mood));
+  /* 最近の3つをよけ、候補が尽きたら直近だけよける */
+  const r = recent();
+  let pool = base;
+  for(let n = RECENT_N; n > 0; n--){
+    const p = base.filter(g=> !r.slice(0,n).includes(g.id));
+    if(p.length){ pool = p; break; }
+  }
+  const g = pool[Math.floor(Math.random()*pool.length)];
+  document.getElementById("pickhint").textContent = `けさは「${g.name}」だっちゃ！`;
+  renderList(g.id);
+  const card = document.querySelector(".card.picked");
+  if(card) card.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto":"smooth", block:"center"});
+};
+
+/* player */
+let P = {g:null, i:0, left:0, timer:null, paused:false, wake:null};
+const $ = id => document.getElementById(id);
+const CIRC = 276.46;
+
+async function startPlayer(id){
+  P.g = GENRES.find(x=>x.id===id); P.i = 0; P.paused=false;
+  $("player").hidden = false; $("pGenre").textContent = P.g.name;
+  try{ if(navigator.wakeLock) P.wake = await navigator.wakeLock.request("screen"); }catch(e){}
+  loadMove();
+}
+function loadMove(){
+  const m = P.g.moves[P.i];
+  P.left = m[1];
+  $("pStage").querySelectorAll(".done").forEach(n=>n.remove());
+  ["pCount","pPose","pName","pHow","pNext"].forEach(k=>$(k).hidden=false);
+  document.querySelector(".ring").hidden=false; document.querySelector(".ctrl").hidden=false;
+  $("pCount").textContent = `${P.i+1} / ${P.g.moves.length}`;
+  const prev = P.g.moves[P.i-1];
+  const changed = prev && prev[3]!==m[3];
+  $("pPose").textContent = `${changed ? "姿勢チェンジ：" : ""}${POSES[m[3]].icon} ${POSES[m[3]].label}`;
+  $("pPose").className = "ppose" + (changed ? " change" : "");
+  $("pName").textContent = m[0];
+  $("pHow").textContent = m[2];
+  const n = P.g.moves[P.i+1];
+  $("pNext").textContent = n ? `つぎ：${n[0]}${n[3]!==m[3] ? `（${POSES[n[3]].icon} ${POSES[n[3]].label}）` : ""}` : "これで最後だっちゃ";
+  $("pToggle").textContent = "一時停止"; P.paused=false;
+  draw(); tick();
+}
+function draw(){
+  const m = P.g.moves[P.i];
+  $("pTime").textContent = P.left;
+  $("pArc").setAttribute("stroke-dashoffset", (CIRC*(1 - P.left/m[1])).toFixed(2));
+}
+function tick(){
+  clearInterval(P.timer);
+  P.timer = setInterval(()=>{
+    if(P.paused) return;
+    P.left--;
+    if(P.left <= 0){ next(); return; }
+    draw();
+  },1000);
+}
+function next(){
+  clearInterval(P.timer);
+  if(P.i < P.g.moves.length-1){ P.i++; loadMove(); } else finish();
+}
+function finish(){
+  const d = new Date();
+  store.set("lastGenre",{id:P.g.id, date:`${d.getMonth()+1}/${d.getDate()}`});
+  store.set("recentGenres",[P.g.id, ...recent().filter(x=>x!==P.g.id)].slice(0,GENRES.length));
+  ["pCount","pPose","pName","pHow","pNext"].forEach(k=>$(k).hidden=true);
+  document.querySelector(".ring").hidden=true; document.querySelector(".ctrl").hidden=true;
+  const done = document.createElement("div");
+  done.className="done";
+  done.innerHTML = `<h3>おつかれだっちゃ！</h3><p class="how">けさは「${P.g.name}」をやりきったっちゃ。<br>明日はちがうジャンルにしてみるっちゃ？</p>`;
+  const b = document.createElement("button"); b.className="btn"; b.type="button"; b.textContent="とじる"; b.onclick=closePlayer;
+  done.appendChild(b);
+  $("pStage").appendChild(done);
+  renderLast();
+}
+function closePlayer(){
+  clearInterval(P.timer); $("player").hidden = true;
+  try{ if(P.wake) P.wake.release(); }catch(e){} P.wake=null;
+}
+$("pClose").onclick = closePlayer;
+$("pSkip").onclick = next;
+$("pPrev").onclick = ()=>{ clearInterval(P.timer); if(P.i>0) P.i--; loadMove(); };
+$("pToggle").onclick = ()=>{ P.paused = !P.paused; $("pToggle").textContent = P.paused ? "再開" : "一時停止"; };
+
+document.getElementById("legend").innerHTML = Object.keys(POSES).map(poseTag).join("");
+renderLast(); renderMoods(); renderList();
+</script>
+</body>
+</html>
