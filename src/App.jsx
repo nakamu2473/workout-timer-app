@@ -374,6 +374,10 @@ export default function WorkoutTimer() {
       <a href="./kesa-taisou.html" style={{ width: "100%", maxWidth: 390, marginBottom: 10, display: "block", textAlign: "center", textDecoration: "none", background: "linear-gradient(180deg, rgba(46,58,99,0.6), rgba(199,123,90,0.35))", border: "1px solid rgba(242,196,107,0.35)", borderRadius: 12, padding: "8px 16px", color: "#F2C46B", fontWeight: 700, fontSize: 13 }}>
         🌄 けさの体操帖（気分で選ぶ朝の体操）
       </a>
+      {/* 寝る前版（public/yoru-taisou.html）。けさ版と同じしくみで中身と配色だけ夜用 */}
+      <a href="./yoru-taisou.html" style={{ width: "100%", maxWidth: 390, marginBottom: 10, display: "block", textAlign: "center", textDecoration: "none", background: "linear-gradient(180deg, rgba(5,7,15,0.7), rgba(59,53,97,0.45))", border: "1px solid rgba(217,190,124,0.3)", borderRadius: 12, padding: "8px 16px", color: "#D9BE7C", fontWeight: 700, fontSize: 13 }}>
+        🌙 よるの体操帖（寝る前にほどく）
+      </a>
 
       {/* アーカイブ：週替わり筋トレ（day1〜3）。データと記録は残したまま折りたたみに収納 */}
       <div style={{ width: "100%", maxWidth: 390, marginBottom: 18, textAlign: "center" }}>
