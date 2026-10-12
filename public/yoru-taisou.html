@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070F">
+<title>よるの体操帖</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+<style>
+/* layout: 夜空の帯の下に「気分」チップ → ジャンルの札が並ぶ。札を開くと動きの一覧、はじめるで1動作ずつのタイマー */
+:root{
+  --bg:#0F1324;
+  --paper:#171C31;
+  --ink:#E4E6F0;
+  --muted:#9097AE;
+  --line:#2A3150;
+  --accent:#D9BE7C;
+  --accent-soft:#2E2B26;
+  --dusk1:#05070F;
+  --dusk2:#1A1F3D;
+  --dusk3:#3B3561;
+  --display:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif;
+  --body:"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif;
+  color-scheme:dark;
+}
+/* 寝る前に開くページなので、端末がライトモードでも暗い配色のまま */
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.7}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:0 48px}
+header.sky{
+  margin-inline:-16px;padding:calc(28px + env(safe-area-inset-top,0px)) 20px 26px;
+  background:linear-gradient(180deg,var(--dusk1) 0%,var(--dusk2) 60%,var(--dusk3) 100%);
+  color:#ECE8F6;position:relative;overflow:hidden;
+}
+header.sky::after{
+  content:"";position:absolute;right:28px;top:calc(22px + env(safe-area-inset-top,0px));width:44px;height:44px;
+  border-radius:50%;box-shadow:-10px 6px 0 0 #F1E3B5;opacity:.9;
+}
+header.sky h1{font-family:var(--display);font-weight:900;font-size:28px;margin:0;letter-spacing:.04em;text-wrap:balance;position:relative;z-index:1}
+header.sky p{margin:4px 0 0;font-size:13px;opacity:.9;position:relative;z-index:1}
+.links{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:4px 16px}
+.back{position:relative;z-index:1;display:inline-block;margin-bottom:8px;font-size:12px;color:#ECE8F6;opacity:.85}
+.last{position:relative;z-index:1;margin-top:10px;font-size:12px;display:inline-block;padding:2px 10px;border-radius:99px;background:rgba(0,0,0,.25)}
+h2{font-family:var(--display);font-weight:700;font-size:17px;margin:24px 0 10px}
+.moods{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  font:inherit;font-size:14px;border:1px solid var(--line);background:var(--paper);color:var(--ink);
+  padding:6px 14px;border-radius:99px;cursor:pointer;
+}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip:focus-visible,.btn:focus-visible,.card summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.pickrow{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.btn{
+  font:inherit;font-weight:700;border:0;border-radius:12px;padding:10px 18px;cursor:pointer;
+  background:var(--accent);color:#1B1408;
+}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.hint{font-size:13px;color:var(--muted)}
+.list{display:grid;gap:10px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px}
+.card.dim{opacity:.45}
+.card.picked{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.card summary{list-style:none;cursor:pointer;padding:14px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}
+.card summary::-webkit-details-marker{display:none}
+.glyph{width:40px;height:40px;border-radius:10px;background:var(--accent-soft);display:grid;place-items:center;font-family:var(--display);font-weight:900;font-size:18px;color:var(--accent)}
+.ttl{min-width:0}
+.ttl b{font-family:var(--display);font-size:16px;display:block;line-height:1.35}
+.ttl span{font-size:12px;color:var(--muted)}
+.new{display:inline-block;margin-left:6px;padding:0 6px;border-radius:6px;background:var(--accent);color:#1B1408;font-size:11px;font-family:var(--body);font-weight:700;vertical-align:2px}
+.poses{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:4px;font-size:12px;color:var(--muted)}
+.pose{display:inline-flex;align-items:center;gap:2px;padding:0 6px 0 4px;border-radius:99px;border:1px solid var(--line);background:var(--bg);white-space:nowrap}
+.pose i{font-style:normal;font-size:14px;line-height:1}
+.poses .arr{opacity:.6;font-size:11px}
+.futon{display:inline-block;padding:1px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-weight:700;white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 12px;font-size:12px;color:var(--muted)}
+ol.moves li .pi{font-size:13px;margin-right:4px}
+.player .ppose{font-size:14px;color:var(--muted)}
+.player .ppose.change{color:var(--accent);font-weight:700}
+.min{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.body{padding:0 16px 16px;border-top:1px dashed var(--line)}
+.body .about{font-size:13px;color:var(--muted);margin:10px 0}
+ol.moves{margin:0;padding-left:1.4em;display:grid;gap:6px}
+ol.moves li b{font-weight:700}
+ol.moves li small{display:block;color:var(--muted);font-size:13px;line-height:1.6}
+ol.moves .sec{font-variant-numeric:tabular-nums;color:var(--accent);font-size:12px;margin-left:6px}
+.body .btn{margin-top:12px}
+.note{font-size:12px;color:var(--muted);margin-top:28px;border-top:1px solid var(--line);padding-top:12px}
+
+/* player */
+.player{position:fixed;inset:0;background:var(--bg);z-index:10;display:flex;flex-direction:column;
+  padding:calc(env(safe-area-inset-top,0px) + 16px) 20px calc(env(safe-area-inset-bottom,0px) + 20px)}
+.player[hidden],[hidden]{display:none!important}
+.player .top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.player .stage{flex:1;display:flex;flex-direction:column;justify-content:center;gap:12px;max-width:560px;margin:0 auto;width:100%}
+.player .count{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.player h3{font-family:var(--display);font-weight:900;font-size:26px;margin:0;line-height:1.35;text-wrap:balance}
+.player .how{font-size:16px;margin:0}
+.ring{width:150px;height:150px;margin:8px auto 0;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .t{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-weight:900;font-size:40px;font-variant-numeric:tabular-nums}
+.player .next{font-size:13px;color:var(--muted);text-align:center;min-height:1.5em}
+.player .ctrl{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.done{text-align:center}
+.done h3{margin-bottom:6px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="sky">
+    <nav class="links"><a class="back" href="./">← ラムの筋トレにもどる</a><a class="back" href="./kesa-taisou.html">☀️ けさ版へ</a></nav>
+    <h1>よるの体操帖</h1>
+    <p>古今東西の夜の動きから、今日の疲れ方でひとつ選んでほどく</p>
+    <div class="last" id="last" hidden></div>
+  </header>
+
+  <h2>今夜の体の調子は？</h2>
+  <div class="moods" id="moods" role="group" aria-label="体の調子"></div>
+  <div class="pickrow">
+    <button class="btn" id="omakase" type="button">おまかせで選ぶ</button>
+    <span class="hint" id="pickhint">調子を選ぶと、合うジャンルが前に出てくるっちゃ</span>
+  </div>
+
+  <h2>ジャンル</h2>
+  <div class="legend" id="legend" aria-label="姿勢のアイコン"></div>
+  <div class="list" id="list"></div>
+
+  <p class="note">眠る前なので、強く伸ばさず「気持ちいい」の手前で止めるのが基本だっちゃ。痛みが出たらその動きは飛ばしてOK。ツボ押しは妊娠中や持病のある人は無理しないでほしいっちゃ。途中で眠くなったら、そのまま寝ちゃっていいっちゃ。「おまかせ」は最近やった3つをよけて選ぶっちゃ。</p>
+</div>
+
+<div class="player" id="player" hidden>
+  <div class="top"><span id="pGenre"></span><button class="btn ghost" id="pClose" type="button">やめる</button></div>
+  <div class="stage" id="pStage">
+    <div class="count" id="pCount"></div>
+    <div class="ppose" id="pPose"></div>
+    <h3 id="pName"></h3>
+    <p class="how" id="pHow"></p>
+    <div class="ring" aria-hidden="true">
+      <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--line)" stroke-width="7"/><circle id="pArc" cx="50" cy="50" r="44" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="276.46" stroke-dashoffset="0"/></svg>
+      <div class="t" id="pTime">0</div>
+    </div>
+    <div class="next" id="pNext"></div>
+    <div class="ctrl">
+      <button class="btn ghost" id="pPrev" type="button">もどる</button>
+      <button class="btn" id="pToggle" type="button">一時停止</button>
+      <button class="btn ghost" id="pSkip" type="button">つぎへ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MOODS = [
+  {id:"hetoheto", label:"へとへと"},
+  {id:"saeru", label:"頭が冴えて眠れない"},
+  {id:"katakori", label:"肩・首がこった"},
+  {id:"mukumi", label:"脚が重い・むくむ"},
+  {id:"ochitsuku", label:"気持ちを落ち着けたい"}
+];
+
+const GENRES = [
+  {id:"futon", glyph:"布", name:"布団でほどく", origin:"布団に入ってから・そのまま眠れる流れ", moods:["hetoheto","katakori"],
+   about:"布団に入ったまま、腰・背中・胸の順にゆるめていく。最後は呼吸だけ。",
+   moves:[
+    ["仰向けで大の字",40,"手足を少し開いて、手のひらを上に。息を吐くたびに布団に沈む感じ。","L"],
+    ["両膝を左右に倒す",60,"膝を立ててそろえ、ゆっくり左右に倒す。肩は布団につけたまま。","L"],
+    ["片膝を胸へ",60,"片膝を抱えて胸へ引き寄せる。左右30秒ずつ。","L"],
+    ["横向きで胸を開く",60,"横向きで膝を曲げ、上の腕を後ろへ開いて胸を天井へ。左右30秒ずつ。","L"],
+    ["足首ぶらぶら",30,"仰向けで脚を少し持ち上げ、足首から先を小さくぶらぶら。","L"],
+    ["ぎゅっと力を入れてストン",30,"全身にぎゅっと力を入れて3秒、一気に脱力。2回。","L"],
+    ["お腹で呼吸して終わり",60,"お腹に手を置いて、ふくらむ・しぼむを感じるだけ。","L"]
+   ]},
+  {id:"breath478", glyph:"息", name:"4-7-8呼吸", origin:"アメリカ・ワイル博士が広めた（ヨガの呼吸法がもと）", moods:["saeru","ochitsuku"],
+   about:"吸う4・止める7・吐く8のリズムで、吐く時間を長くとる呼吸。はじめのうちは一度に4回までにしておく。",
+   moves:[
+    ["楽な姿勢になる",30,"仰向けか横向きで。舌先を上の前歯の裏のふくらみに軽くつける。","L"],
+    ["口から吐き切る",20,"口から「フーッ」と音を立てて、息を吐き切る。","L"],
+    ["4吸って7止めて8吐く",120,"口を閉じて鼻から4つで吸い、7つ止め、口から8つで吐く。これを4回。止めるのが苦しければ数を短くしてOK。","L"],
+    ["ふつうの呼吸で休む",60,"数えるのをやめて、呼吸を自然にまかせる。","L"],
+    ["数えずに長く吐く",90,"吸うのは自然にまかせて、吐くほうだけ少し長めにする。","L"],
+    ["そのまま目を閉じる",60,"体の重さを布団にあずけて、何もしない。","L"]
+   ]},
+  {id:"nidra", glyph:"眠", name:"ヨガ・ニドラ風ボディスキャン", origin:"インド・ヨーガの「眠りのヨーガ」を簡単に", moods:["saeru","ochitsuku","hetoheto"], 
+   about:"体を動かさず、注意だけを体のあちこちへ順番に移していく。考えごとが止まらない夜に。",
+   moves:[
+    ["横になる",30,"仰向けで、手のひらを上に。今日のことはいったん横に置いておく。","L"],
+    ["右手と右腕",60,"右手の親指、人さし指…と順に注意を向けて、手首、ひじ、肩へ。動かさずに感じるだけ。","L"],
+    ["左手と左腕",60,"左手も同じように、指先から肩まで。","L"],
+    ["右脚",60,"右足の指から、足の裏、かかと、すね、ひざ、太もも、お尻へ。","L"],
+    ["左脚",60,"左脚も同じように、つま先からお尻まで。","L"],
+    ["背中とお腹",60,"腰、背中、肩甲骨、それからお腹、胸。呼吸で動くところを感じる。","L"],
+    ["顔",60,"おでこ、眉のあいだ、まぶた、頬、あご。奥歯をそっと離す。","L"],
+    ["全身をひとつに",60,"体全体をいっぺんに感じる。そのまま眠ってしまってOK。","L"]
+   ]},
+  {id:"legsup", glyph:"脚", name:"脚を上げてむくみ抜き", origin:"ヨガの「壁に脚を上げるポーズ」から", moods:["mukumi","hetoheto"],
+   about:"立ち仕事や座りっぱなしで重くなった脚を、高く上げて休ませる。壁がなければ枕やクッションに脚をのせる。",
+   moves:[
+    ["足首の曲げ伸ばし",40,"仰向けでつま先を手前に引いて、伸ばす。ゆっくりくり返す。","L"],
+    ["ふくらはぎをさする",60,"座って、足首からひざへ向かって両手でさすり上げる。左右30秒ずつ。","S"],
+    ["壁に脚をあずける",180,"お尻を壁に近づけて仰向けになり、脚を壁にあずける。腰がつらければ壁から少し離れる。","L"],
+    ["つま先をパタパタ",30,"脚を上げたまま、つま先を小さく曲げ伸ばし。","L"],
+    ["脚をV字に開いて休む",60,"壁にそわせて脚を開く。内ももがつらければ閉じたままでOK。","L"],
+    ["横向きに下ろす",30,"ひざを曲げて横向きに転がり、脚を下ろす。少しそのまま休む。","L"]
+   ]},
+  {id:"yin", glyph:"陰", name:"陰ヨガ", origin:"アメリカ・1970年代〜（道教の考えを取り入れたヨガ）", moods:["ochitsuku","mukumi"],
+   about:"筋肉で伸ばすのではなく、重さにまかせて数分じっとする静かなヨガ。ひとつのポーズが長いぶん、動きは少ない。",
+   moves:[
+    ["蝶のポーズ",150,"足の裏を合わせて座り、背中を丸めて前へ脱力。力は使わず、重さで沈む。","S"],
+    ["いも虫のポーズ",150,"脚を前に伸ばして座り、背中を丸めて前へ。ひざは曲げてOK。","S"],
+    ["スフィンクス",120,"うつ伏せでひじをつき、胸を軽く起こす。腰がつらければひじを前へ出す。","L"],
+    ["仰向けのねじり",120,"仰向けで両ひざを片側へ倒し、顔は反対へ。左右60秒ずつ。","L"],
+    ["しかばねのポーズ",60,"仰向けで手足を投げ出して、何もしない。","L"]
+   ]},
+  {id:"shiatsu", glyph:"指", name:"セルフ指圧", origin:"日本・指圧（大正〜昭和に体系化）のセルフ版", moods:["katakori","saeru"],
+   about:"首・肩・手・足のツボを、自分の指で気持ちいい強さで押す。5秒押して離す、をくり返す。",
+   moves:[
+    ["首のつけ根（風池）",60,"後頭部の下、首の太い筋の外側のくぼみに親指を当て、頭の重みをあずけて押す。","S"],
+    ["肩のてっぺん（肩井）",60,"首のつけ根と肩先の真ん中あたり。反対の手の指で押す。左右30秒ずつ。","S"],
+    ["手の甲（合谷）",60,"親指と人さし指の骨が合わさるところのくぼみ。左右30秒ずつ。","S"],
+    ["手のひら（労宮）",40,"手を握ったとき中指の先が当たるところ。反対の親指でゆっくり押す。","S"],
+    ["足の裏（湧泉）",60,"足の指を曲げたときにくぼむところ。両手の親指で押す。左右30秒ずつ。","S"],
+    ["耳を引っぱる",30,"耳たぶや耳の上をつまんで、外へやさしく引っぱる。","S"],
+    ["手のひらで目をおおう",40,"手をこすって温め、閉じたまぶたにそっとかぶせる。","S"]
+   ]},
+  {id:"liuzi", glyph:"六", name:"六字訣", origin:"中国・南北朝の陶弘景の書に残る呼吸法", moods:["ochitsuku","katakori"],
+   about:"6つの音を吐く息にのせる気功。音はそれぞれ体の臓器に対応するとされてきた。夜はささやき声くらいで。",
+   moves:[
+    ["かまえる",30,"あぐらか椅子で背筋を伸ばし、両手をお腹に重ねる。","S"],
+    ["嘘（シュー）",45,"吐く息に小さく「シュー」とのせる。3回。","S"],
+    ["呵（ハー）",45,"口を少し開けて「ハー」と吐く。3回。","S"],
+    ["呼（フー）",45,"口をすぼめて「フー」と吐く。3回。","S"],
+    ["呬（スー）",45,"歯を軽く合わせて「スー」と吐く。3回。","S"],
+    ["吹（チュイー）",45,"唇を前に出して「チュイー」と吐く。3回。","S"],
+    ["嘻（シー）",45,"口角を横に引いて「シー」と吐く。3回。","S"],
+    ["静かに呼吸",30,"音をやめて、ふつうの呼吸に戻す。","S"]
+   ]},
+  {id:"egypt", glyph:"月", name:"ラーの夜の旅ごっこ", origin:"王墓の壁に描かれた冥界の物語を借りたお遊び", moods:["saeru","ochitsuku"],
+   about:"太陽神ラーは夜の12時間、船で冥界を旅して、朝にまた生まれ変わる。新王国時代の王墓の壁に描かれた物語の場面を借りた遊びメニューで、古代の体操の再現ではない。",
+   moves:[
+    ["沈む太陽を見送る",30,"座って両手のひらを顔の前で前に向け、西に沈むラーを見送るつもりで深呼吸。","S"],
+    ["夜の船に乗る",60,"仰向けで両ひざを抱え、背中で左右にゆらゆら。冥界の川をくだる船。","L"],
+    ["夜空の女神ヌト",60,"四つ這いで背中を丸め、夜空になって大地をおおう女神ヌトのように背中を広げる。","Q"],
+    ["大地の神ゲブの寝姿",60,"横向きに寝て、下の腕を枕にする。左右30秒ずつ。","L"],
+    ["オシリスの眠り",90,"仰向けで、胸の前で腕を交差させる。王杖を持つオシリス像の腕の形。呼吸だけ数える。","L"],
+    ["夜明けを待つ",30,"目を閉じて、ラーが朝に生まれ変わるのを待つつもりで、自然な呼吸に。","L"]
+   ]}
+];
+
+const POSES = {
+  L:{icon:"🛏️", label:"寝て"},
+  Q:{icon:"🐈", label:"四つ這い"},
+  S:{icon:"🧘", label:"座って"},
+  T:{icon:"🧍", label:"立って"}
+};
+/* ジャンル内で出てくる姿勢を、出てくる順に重複なしで */
+const posesOf = g => g.moves.reduce((a,m)=> a.at(-1)===m[3] ? a : [...a, m[3]], []).filter((c,i,a)=>a.indexOf(c)===i);
+const poseTag = c => `<span class="pose"><i aria-hidden="true">${POSES[c].icon}</i>${POSES[c].label}</span>`;
+
+const store = {
+  get(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+let mood = null;
+const RECENT_N = 3;
+const NEW_DAYS = 21;
+const fmtMin = s => { const m = Math.round(s/60); return m < 1 ? "1分未満" : `約${m}分`; };
+const total = g => g.moves.reduce((a,m)=>a+m[1],0);
+const isNew = g => g.added && (Date.now() - new Date(g.added).getTime()) < NEW_DAYS*864e5;
+
+/* 最近やったジャンル（新しい順）。旧版の lastGenre だけある場合もそこから始める */
+function recent(){
+  const r = store.get("yoruRecentGenres");
+  if(Array.isArray(r)) return r;
+  const last = store.get("yoruLastGenre");
+  return last ? [last.id] : [];
+}
+
+function renderLast(){
+  const last = store.get("yoruLastGenre");
+  const el = document.getElementById("last");
+  if(last){
+    const g = GENRES.find(x=>x.id===last.id);
+    if(g){ el.textContent = `前回：${g.name}（${last.date}）`; el.hidden = false; }
+  }
+}
+
+function renderMoods(){
+  const box = document.getElementById("moods");
+  box.innerHTML = "";
+  MOODS.forEach(m=>{
+    const b = document.createElement("button");
+    b.type="button"; b.className="chip"; b.id="mood-"+m.id; b.textContent=m.label;
+    b.setAttribute("aria-pressed", mood===m.id ? "true":"false");
+    b.onclick = ()=>{ mood = (mood===m.id) ? null : m.id; renderMoods(); renderList(); };
+    box.appendChild(b);
+  });
+}
+
+function renderList(pickedId){
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+  const sorted = [...GENRES].sort((a,b)=>{
+    if(!mood) return 0;
+    return (b.moods.includes(mood)?1:0) - (a.moods.includes(mood)?1:0);
+  });
+  sorted.forEach(g=>{
+    const d = document.createElement("details");
+    d.className = "card";
+    if(mood && !g.moods.includes(mood)) d.classList.add("dim");
+    if(pickedId===g.id){ d.classList.add("picked"); d.open = true; }
+    d.innerHTML = `
+      <summary>
+        <div class="glyph">${g.glyph}</div>
+        <div class="ttl"><b>${g.name}${isNew(g) ? '<span class="new">NEW</span>' : ""}</b><span>${g.origin}</span>
+          <div class="poses">${g.moves.at(-1)[3]==="L" ? '<span class="futon">そのまま眠れる</span>' : ""}${posesOf(g).map(poseTag).join('<span class="arr" aria-label="から">→</span>')}</div></div>
+        <div class="min">${fmtMin(total(g))}</div>
+      </summary>
+      <div class="body">
+        <p class="about">${g.about}</p>
+        <ol class="moves">${g.moves.map(m=>`<li><span class="pi" title="${POSES[m[3]].label}" aria-label="${POSES[m[3]].label}">${POSES[m[3]].icon}</span><b>${m[0]}</b><span class="sec">${m[1]}秒</span><small>${m[2]}</small></li>`).join("")}</ol>
+        <button class="btn" type="button" data-start="${g.id}">これではじめる</button>
+      </div>`;
+    list.appendChild(d);
+  });
+  list.querySelectorAll("[data-start]").forEach(b=> b.onclick = ()=> startPlayer(b.dataset.start));
+}
+
+document.getElementById("omakase").onclick = ()=>{
+  const base = GENRES.filter(g=> !mood || g.moods.includes(mood));
+  /* 最近の3つをよけ、候補が尽きたら直近だけよける */
+  const r = recent();
+  let pool = base;
+  for(let n = RECENT_N; n > 0; n--){
+    const p = base.filter(g=> !r.slice(0,n).includes(g.id));
+    if(p.length){ pool = p; break; }
+  }
+  const g = pool[Math.floor(Math.random()*pool.length)];
+  document.getElementById("pickhint").textContent = `今夜は「${g.name}」だっちゃ！`;
+  renderList(g.id);
+  const card = document.querySelector(".card.picked");
+  if(card) card.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto":"smooth", block:"center"});
+};
+
+/* player */
+let P = {g:null, i:0, left:0, timer:null, paused:false, wake:null};
+const $ = id => document.getElementById(id);
+const CIRC = 276.46;
+
+async function startPlayer(id){
+  P.g = GENRES.find(x=>x.id===id); P.i = 0; P.paused=false;
+  $("player").hidden = false; $("pGenre").textContent = P.g.name;
+  try{ if(navigator.wakeLock) P.wake = await navigator.wakeLock.request("screen"); }catch(e){}
+  loadMove();
+}
+function loadMove(){
+  const m = P.g.moves[P.i];
+  P.left = m[1];
+  $("pStage").querySelectorAll(".done").forEach(n=>n.remove());
+  ["pCount","pPose","pName","pHow","pNext"].forEach(k=>$(k).hidden=false);
+  document.querySelector(".ring").hidden=false; document.querySelector(".ctrl").hidden=false;
+  $("pCount").textContent = `${P.i+1} / ${P.g.moves.length}`;
+  const prev = P.g.moves[P.i-1];
+  const changed = prev && prev[3]!==m[3];
+  $("pPose").textContent = `${changed ? "姿勢チェンジ：" : ""}${POSES[m[3]].icon} ${POSES[m[3]].label}`;
+  $("pPose").className = "ppose" + (changed ? " change" : "");
+  $("pName").textContent = m[0];
+  $("pHow").textContent = m[2];
+  const n = P.g.moves[P.i+1];
+  $("pNext").textContent = n ? `つぎ：${n[0]}${n[3]!==m[3] ? `（${POSES[n[3]].icon} ${POSES[n[3]].label}）` : ""}` : "これで最後だっちゃ";
+  $("pToggle").textContent = "一時停止"; P.paused=false;
+  draw(); tick();
+}
+function draw(){
+  const m = P.g.moves[P.i];
+  $("pTime").textContent = P.left;
+  $("pArc").setAttribute("stroke-dashoffset", (CIRC*(1 - P.left/m[1])).toFixed(2));
+}
+function tick(){
+  clearInterval(P.timer);
+  P.timer = setInterval(()=>{
+    if(P.paused) return;
+    P.left--;
+    if(P.left <= 0){ next(); return; }
+    draw();
+  },1000);
+}
+function next(){
+  clearInterval(P.timer);
+  if(P.i < P.g.moves.length-1){ P.i++; loadMove(); } else finish();
+}
+function finish(){
+  const d = new Date();
+  store.set("yoruLastGenre",{id:P.g.id, date:`${d.getMonth()+1}/${d.getDate()}`});
+  store.set("yoruRecentGenres",[P.g.id, ...recent().filter(x=>x!==P.g.id)].slice(0,GENRES.length));
+  ["pCount","pPose","pName","pHow","pNext"].forEach(k=>$(k).hidden=true);
+  document.querySelector(".ring").hidden=true; document.querySelector(".ctrl").hidden=true;
+  const done = document.createElement("div");
+  done.className="done";
+  done.innerHTML = `<h3>おやすみだっちゃ</h3><p class="how">今夜は「${P.g.name}」でほどいたっちゃ。<br>画面を閉じて、そのまま目をつぶるっちゃ。</p>`;
+  const b = document.createElement("button"); b.className="btn"; b.type="button"; b.textContent="とじる"; b.onclick=closePlayer;
+  done.appendChild(b);
+  $("pStage").appendChild(done);
+  renderLast();
+  try{ if(P.wake) P.wake.release(); }catch(e){} P.wake=null;
+}
+function closePlayer(){
+  clearInterval(P.timer); $("player").hidden = true;
+  try{ if(P.wake) P.wake.release(); }catch(e){} P.wake=null;
+}
+$("pClose").onclick = closePlayer;
+$("pSkip").onclick = next;
+$("pPrev").onclick = ()=>{ clearInterval(P.timer); if(P.i>0) P.i--; loadMove(); };
+$("pToggle").onclick = ()=>{ P.paused = !P.paused; $("pToggle").textContent = P.paused ? "再開" : "一時停止"; };
+
+document.getElementById("legend").innerHTML = Object.keys(POSES).map(poseTag).join("");
+renderLast(); renderMoods(); renderList();
+</script>
+</body>
+</html>
