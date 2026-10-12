@@ -370,6 +370,11 @@ export default function WorkoutTimer() {
         {ACTIVE_DAY_KEYS.map(renderDayButton)}
       </div>
 
+      {/* 朝の気分で古今東西のジャンルから選ぶ別ページ（public/kesa-taisou.html、単独のHTML） */}
+      <a href="./kesa-taisou.html" style={{ width: "100%", maxWidth: 390, marginBottom: 10, display: "block", textAlign: "center", textDecoration: "none", background: "linear-gradient(180deg, rgba(46,58,99,0.6), rgba(199,123,90,0.35))", border: "1px solid rgba(242,196,107,0.35)", borderRadius: 12, padding: "8px 16px", color: "#F2C46B", fontWeight: 700, fontSize: 13 }}>
+        🌄 けさの体操帖（気分で選ぶ朝の体操）
+      </a>
+
       {/* アーカイブ：週替わり筋トレ（day1〜3）。データと記録は残したまま折りたたみに収納 */}
       <div style={{ width: "100%", maxWidth: 390, marginBottom: 18, textAlign: "center" }}>
         <button className="btn" onClick={() => setShowArchive(a => !a)} style={{ background: "rgba(255,255,255,0.04)", border: "1px dashed rgba(255,255,255,0.18)", borderRadius: 12, padding: "7px 16px", color: "rgba(255,255,255,0.45)", fontFamily: "inherit", fontWeight: 700, fontSize: 11 }}>
