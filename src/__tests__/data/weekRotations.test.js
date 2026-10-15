@@ -265,11 +265,24 @@ describe('TAISO_DAY', () => {
     expect(TAISO_DAY.exercises[TAISO_DAY.exercises.length - 1].name).toBe('深呼吸で整える');
   });
 
-  it('fits the ~6 minute target', () => {
+  it('fits the ~7 minute target', () => {
     const total = TAISO_DAY.exercises.reduce((s, ex, i) =>
       s + ex.duration + (i < TAISO_DAY.exercises.length - 1 ? ex.rest : 0), 0);
-    expect(total).toBeGreaterThanOrEqual(5 * 60);
-    expect(total).toBeLessThanOrEqual(6 * 60);
+    expect(total).toBeGreaterThanOrEqual(6.5 * 60);
+    expect(total).toBeLessThanOrEqual(7.5 * 60);
+  });
+
+  it('every taiso exercise has a speech (short voice guide) in EXERCISE_GUIDE', () => {
+    TAISO_DAY.exercises.forEach(ex => {
+      expect(typeof EXERCISE_GUIDE[ex.name]?.speech, ex.name).toBe('string');
+      expect(EXERCISE_GUIDE[ex.name].speech.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('rests are long enough (>=15s) for the 休憩中やり方読み上げ', () => {
+    TAISO_DAY.exercises.slice(0, -1).forEach(ex => {
+      expect(ex.rest, ex.name).toBeGreaterThanOrEqual(15);
+    });
   });
 
   it('includes アキレス腱伸ばし with 左右 in reps so the halfway 左右交代 cue fires', () => {

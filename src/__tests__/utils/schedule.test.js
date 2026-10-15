@@ -298,6 +298,17 @@ describe('buildSchedule – TAISO_DAY', () => {
     expect(countdowns.some(s => s.label && s.label.includes('体操'))).toBe(true);
   });
 
+  it('rest steps carry the next exercise voice guide (guideSpeech) for 休憩中読み上げ', () => {
+    const rests = getStepsByType(steps, 'rest').filter(s => !s.mini);
+    expect(rests.length).toBe(TAISO_DAY.exercises.length - 1);
+    rests.forEach(r => {
+      expect(typeof r.guideSpeech, `rest before ${r.nextName}`).toBe('string');
+      expect(r.guideSpeech).toBe(EXERCISE_GUIDE[r.nextName].speech);
+      // 読み上げは休憩15秒以上が条件（speech.js）なので休憩の長さも保証する
+      expect(r.duration, `rest before ${r.nextName}`).toBeGreaterThanOrEqual(15);
+    });
+  });
+
   it('is not silent', () => {
     steps.forEach(s => expect(s.silent).toBeUndefined());
   });
